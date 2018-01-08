@@ -1,0 +1,63 @@
+<!--index.wxml-->
+<view class="container">
+  <view wx:for="{{message_list}}">
+    <!-- 显示关注、转发与喜爱等信息，显示在panel的行间 -->
+    <view wx:if="{{(item.type != 1) && (item.type!= 2)}}" class="zan-panel-title">
+      <view wx:if="{{item.type == 7}}">
+        <view class='zan-tag zan-c-gray-darker'>{{item.sponsor_nickname}}</view> {{item.time}} 关注了
+        <view class='zan-tag zan-c-gray-darker'>{{item.associate_nickname}}</view>
+      </view>
+      <view wx:elif="{{item.type == 5}}">
+        <text class="fa fa-heart zan-c-gray-darker"></text>
+        <text decode='true'>&nbsp;</text>
+        <view class='zan-tag zan-c-gray-darker'>{{item.sponsor_nickname}}</view> {{item.time}} 喜欢了:
+      </view>
+      <view wx:elif="{{item.type == 4}}">
+        <text class="fa fa-retweet zan-c-gray-darker"></text>
+        <text decode='true'>&nbsp;</text>
+        <view class='zan-tag zan-c-gray-darker'>{{item.sponsor_nickname}}</view> {{item.time}} 转发了:
+      </view>
+    </view>
+    <!-- 显示消息的正文内容 -->
+    <view wx:if="{{item.type != 7}}" class="zan-panel">
+      <view style="padding: 1rem;" class="zan-row">
+        <view class="zan-col zan-col-4">
+          <image class="avatar" src="{{item.avatar}}"></image>
+        </view>
+        <view class="zan-col zan-col-20">
+          <text class="zan-font-16 zan-font-bold">{{item.nickname}}</text>
+          <text class="zan-font-12 zan-c-gray-dark" decode='true'> &nbsp; {{item.time}}</text>
+          <view class="zan-font-16 zan-c-gray-darker">{{item.body}}</view>
+          <!-- 图片显示控件 -->
+          <view class='zan-row'>
+            <block wx:for="{{item.images}}" wx:for-item="images">
+              <image wx:if="{{item.images.length==1}}" class="zan-col zan-col-22" mode="aspectFit" src="{{images}}" catchtap="previewImage" data-current="{{images}}" data-all="{{item.images}}"></image>
+              <image wx:else class="zan-col zan-col-11 message-list-images" mode="aspectFill" src="{{images}}" catchtap="previewImage" data-current="{{images}}" data-all="{{item.images}}"></image>
+            </block>
+          </view>
+          <!-- 显示每条消息的页脚 -->
+          <view class="zan-row">
+            <text>\n</text>
+            <view wx:if="{{item.is_favoed}}" class="icons-bar zan-col zan-col-6 zan-c-red fa fa-heart">
+              {{item.favo_count}}
+            </view>
+            <view wx:else class="icons-bar zan-col zan-col-6 zan-c-gray-darker fa fa-heart-o">
+              {{item.favo_count}}
+            </view>
+            <view class="icons-bar zan-col zan-col-6 zan-c-gray-darker fa fa-comments-o">
+              {{item.comment_count}}
+            </view>
+            <view wx:if="{{item.is_quoted}}" class="icons-bar zan-col zan-col-6 zan-c-green fa fa-retweet">
+              {{item.quote_count}}
+            </view>
+            <view wx:else class="icons-bar zan-col zan-col-6 zan-c-gray-darker fa fa-retweet">
+              {{item.quote_count}}
+            </view>
+            <view class="icons-bar zan-col zan-col-6 zan-c-gray-darker fa fa-envelope-o">
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>
