@@ -24,8 +24,6 @@ App({
       var wxGetUserInfo = util.wxGetUserInfo()
       return wxGetUserInfo()
     }).then(res => {
-      console.log('userinfo为')
-      console.log(res.userInfo)
       var code = wx.getStorageSync('code')
       var url = config.getHostUrl() + 'login/wechat/'
       var data = {
@@ -38,7 +36,7 @@ App({
     })
   },
 
-  userinfo: function () {
+  userInfo: function () {
     var that = this
     var url = config.getHostUrl() + 'user/self/'
     var data = {
@@ -50,13 +48,23 @@ App({
     userInfo: null
   },
 
-  loadevents: function(start,direction) {
+  loadEvents: function(start,direction) {
     var that = this
     var url = config.getHostUrl() + 'events/'
     var data = {
       login_key: wx.getStorageSync('userKey').login_key,
       start:start,
       direction:direction
+    }
+    return util.getRequest(url,data)
+  },
+
+  favoMessage: function(messageId) {
+    var that = this
+    var url = config.getHostUrl() + 'message/favo_message/'
+    var data = {
+      login_key: wx.getStorageSync('userKey').login_key,
+      message_id: messageId
     }
     return util.getRequest(url,data)
   }

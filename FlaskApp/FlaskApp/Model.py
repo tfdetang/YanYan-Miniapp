@@ -44,6 +44,14 @@ message_favo = Table('message_favo', Base.metadata,
                      Column('message_id', Integer, ForeignKey('message.id')),
                      Column('user_id', Integer, ForeignKey('user.id')))
 
+message_comment = Table('message_comment', Base.metadata,
+                        Column('message_id', Integer, ForeignKey('message.id')),
+                        Column('user_id', Integer, ForeignKey('user.id')))
+
+message_quoted = Table('message_quoted', Base.metadata,
+                       Column('message_id', Integer, ForeignKey('message.id')),
+                       Column('user_id', Integer, ForeignKey('user.id')))
+
 
 # ==============================================Model==========================================
 
@@ -139,6 +147,12 @@ class User(Base, Utils, db.Model, UserMixin):
     favo_messages = relationship('Message',
                                  secondary=message_favo,
                                  lazy='dynamic')
+    commented_messages = relationship('Message',
+                                      secondary=message_comment,
+                                      lazy='dynamic')
+    quoted_messages = relationship('Message',
+                                   secondary=message_quoted,
+                                   lazy='dynamic')
 
     def is_authenticate(self):
         return True
@@ -214,7 +228,8 @@ class User(Base, Utils, db.Model, UserMixin):
     def followed_event(self):
         return db.session.query(Event).join(follower, (follower.c.followed_id == Event.sponsor)) \
             .filter(follower.c.follower_id == self.id).filter(
-            (Event.type == 1) | (Event.type == 2) | (Event.type == 4) | (Event.type == 5) | (Event.type == 7))
+            (Event.type == 1) | (Event.type == 2) | ((Event.type == 4) & (Event.sponsor != self.id)) | (
+                (Event.type == 5) & (Event.sponsor != self.id)) | ((Event.type == 7) & (Event.sponsor != self.id)))
 
     def self_event(self):
         return db.session.query(Event).filter(Event.sponsor == self.id).filter(
@@ -255,6 +270,7 @@ class User(Base, Utils, db.Model, UserMixin):
         message.update()
         commented_message = db.session.query(Message).filter(Message.id == comment_id).one()
         commented_message.comment_count += 1
+        self.commented_messages.append(commented_message)
         commented_message.update()
         event = Event(sponsor=self.id,
                       associate_message=message.id,
@@ -262,13 +278,16 @@ class User(Base, Utils, db.Model, UserMixin):
                       associate_user=commented_message.author_id,
                       type=3)
         event.save()
+        self.update()
         return message
 
     def quote_message(self, body, quoted_id):
         quoted_message = db.session.query(Message).filter(Message.id == quoted_id).one()
         quoted_message.quote_count += 1
+        self.quoted_messages.append(quoted_message)
         quoted_message.update()
         if body:
+            self.commented_messages.append(quoted_message)  # 如果转发的时候带文字，则也算入评论中
             message = self.post_message(body)
             message.quote_id = quoted_id
             message.type = 2
@@ -285,12 +304,14 @@ class User(Base, Utils, db.Model, UserMixin):
                           associate_user=quoted_message.author_id,
                           type=4)
         event.save()
+        self.update()
         return event
 
     def is_quoted_message(self, message_id):
-        return db.session.query(Event).filter(
-            (Event.sponsor == self.id) & (Event.associate_message == message_id)).filter(
-            (Event.type == 4) | (Event.type == 2)).count() > 0
+        return self.quoted_messages.filter(message_quoted.c.message_id == message_id).count() > 0
+
+    def is_commented_message(self, message_id):
+        return self.commented_messages.filter(message_comment.c.message_id == message_id).count() > 0
 
     def is_favoed_message(self, message_id):
         return self.favo_messages.filter(message_favo.c.message_id == message_id).count() > 0
@@ -496,18 +517,20 @@ if __name__ == '__main__':
         # events = user1.followed_event().offset(0).limit(10).all()
         # user1.set_profile()
         # user2.set_profile()
-        message7.add_images('msg_img_WrxKYo05sp')
-        # user2.create_message('最后是一张图片情况下的测试，#bug快走开')
+        # message7.add_images('msg_img_WrxKYo05sp')
+        user3.create_message('测试一下下拉刷新功能！！')
 
 
-        #user2.quote_message(body='', quoted_id=2)
-        #print(user2.is_quoted_message(2))
-        #user3.create_message('2张图片显示。')
+        # user2.quote_message(body='', quoted_id=2)
+        #user3.quote_message(body='', quoted_id=7)
+        # user2.comment_message('评论测试', 2)
+        # print(user2.is_quoted_message(2))
+        # user3.create_message('2张图片显示。')
 
         # print(user1.self_event().order_by(Event.id.desc()).filter((Event.type == 2) | (Event.type == 3)).limit(10).all())
 
         # user2.favo_message(1)
-        # user2.follow(user3.id)
+        #user3.follow(user2.id)
         # message = db.session.query(Message).filter(Message.id == 8).one()
         # print(message.favo_users.count())
         # user2.quote_message('我们来测试一下转发 是否能正常生效',1)

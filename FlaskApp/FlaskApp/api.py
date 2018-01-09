@@ -121,6 +121,7 @@ def message_2_dict(i):
                    username=user.username,
                    is_favoed=g.user.is_favoed_message(i.id),
                    is_quoted=g.user.is_quoted_message(i.id),
+                   is_comment=g.user.is_commented_message(i.id),
                    avatar = app.config['BASE_URL']+'/avatar_'+str(i.author_id))
 
     if i.images.count() > 0:
@@ -151,6 +152,10 @@ def events_2_dict(events):
                 message = message_2_dict(i.get_message())
                 message['type'] = i.type
                 message['sponsor_nickname'] = i.get_sponsor().nickname
+                try:
+                    message['quoted'] = message_2_dict(i.get_message().get_quoted_message())
+                except:
+                    pass
                 message['sponsor_id'] = i.sponsor
                 message['time'] = tools.timestamp_2_zh(i.time)
                 message['event_id'] = i.id
@@ -211,3 +216,35 @@ def get_events():
     result = dict(num=len(message_list),
                   message_list=message_list)
     return jsonify(result)
+
+# ---------------------------------------推文操作相关接口-----------------------------
+
+
+@app.route('/message/favo_message/', methods=['GET','POST'])
+@login_required
+def favo_message():
+    message_id = request.args.get('message_id', '0')
+    try:
+        message = db.session.query(Message).filter(Message.id == message_id).one()
+    except:
+        return jsonify({'error': 'wrong_message_id'})
+    if g.user.is_favoed_message(message_id):
+        g.user.unfavo_message(message_id)
+        favo = 0
+    else:
+        g.user.favo_message(message_id)
+        favo = 1
+    favo_count = message.favo_users.count()
+    return jsonify({'favo':favo,'count':str(favo_count)})
+
+
+@app.route('/message/reply_message_<id>/', methods=['GET','POST'])
+@login_required
+def reply_message(id):
+    comment = request.args.get('comment', ' ')
+    try:
+        message = db.session.query(Message).filter(Message.id == int(id)).one()
+    except:
+        return jsonify({'error': 'wrong_message_id'})
+    g.user.comment_message(comment, int(id))
+    return jsonify({'status': 'success'})
