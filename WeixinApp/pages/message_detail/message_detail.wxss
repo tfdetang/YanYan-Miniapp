@@ -1,0 +1,108 @@
+/* pages/message_detail/message_detail.wxss */
+
+.detail-list-images {
+  width: 8rem;
+  height: 8rem;
+  padding: 0.2rem;
+  display: flex;
+  flex-wrap: wrap;
+  border-radius: 0.5rem;
+}
+
+.detail-single-image {
+  padding-top: 0.5rem;
+  border-radius: 0.3rem;
+  width: 100%;
+}
+
+.detail-panel {
+  padding-left: 1rem;
+  padding-right: 1rem;
+  padding-top: 1rem;
+}
+
+.detail-body {
+  word-break: break-all;
+  line-height: 160%;
+}
+
+.icons-bar-big{
+  font-size: 1rem;
+}
+
+.icons-bar-detail {
+  padding-top: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid rgba(100, 100, 100, 0.2);
+  font-size: 1rem;
+  background: #f7f7f7;
+}
+
+.card-quoted {
+  margin-top: 0.7rem;
+  border: 1px solid #dae2ea;
+  border-radius: 0.3rem;
+  max-height: 5.8rem;
+}
+
+.quote-iamge {
+  height: 5.8rem;
+  width: 100%;
+}
+
+.quote-inner {
+  padding-top: 0.4rem;
+  padding-right: 0.4rem;
+  padding-left: 1rem;
+  padding-bottom: 0.4rem;
+}
+
+.quote-body {
+  max-height: 4rem;
+  display: -webkit-box;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  word-break: break-all;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-height: 130%;
+}
+
+.comment-area {
+  padding-left: 1rem;
+  padding-right: 1rem;
+  padding-bottom: 1rem;
+  margin-bottom: 2rem;
+}
+
+.reply-card {
+  margin-top: 0.7rem;
+  background-color: #eeeeee;
+  border-radius: 0.3rem;
+}
+
+.avatar-reply {
+  width: 1.8em;
+  height: 1.8rem;
+  border-radius: 50%;
+}
+
+.reply-input {
+  border-top: 1px solid rgba(150,150, 150, 0.3);
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  background-color:white;
+}
+
+.reply-textarea {
+  border-bottom: 1px solid #dd6f8c;
+}
+
+.zan-btn {
+  border-radius: 0.2rem;
+}
+
+.reply-tools{
+  margin-bottom: 0.3rem;
+}

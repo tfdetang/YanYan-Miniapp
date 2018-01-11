@@ -1,0 +1,26 @@
+<!--pages/editor/editor.wxml-->
+<view class="container">
+  <!--输入帖子内容的区域-->
+  <view class="zan-row" style="padding:1rem">
+    <view class="zan-col zan-col-4">
+      <image class="avatar" src="{{avatar}}"></image>
+    </view>
+    <view class="zan-col zan-col-20">
+      <textarea value="{{textValue}}" name="textarea" bindinput="getText" class="reply-textarea" focus="{{focus}}" auto-height="true" maxlength="260" cursor-spacing="10" show-confirm-bar="" placeholder="{{initText}}" />
+    </view>
+  </view>
+  <!--工具栏-->
+  <view class="upload-field" style="padding:1rem">
+    <view class="tool-container zan-row">
+      <view catchtap="uploadImg" class="fa fa-lg fa-picture-o zan-col zan-col-3 zan-c-gray-darker"></view>
+      <view class="fa fa-lg fa-at zan-col zan-col-3 zan-c-gray-darker"></view>
+    </view>
+  </view>
+  <swiper indicator-dots="true" class="image-container" circular="true">
+    <block wx:for="{{imgList}}" wx:for-item="img">
+      <swiper-item>
+        <image class="swiper-img" src="{{img}}" mode="aspectFill"></image>
+      </swiper-item>
+    </block>
+  </swiper>
+</view>

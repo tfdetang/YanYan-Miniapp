@@ -1,0 +1,125 @@
+<view class="container">
+  <view class="zan-panel">
+    <view class="zan-row detail-panel">
+      <view class="zan-col zan-col-4">
+        <image class="avatar" src="{{message.avatar}}"></image>
+      </view>
+      <view class="zan-col zan-col-20">
+        <text class="zan-font-16 zan-font-bold">{{message.nickname}}</text>
+        <text class="zan-font-16 zan-c-gray-dark zan-pull-right" decode="true"> &nbsp; {{message.time_update}}</text>
+        <view class="zan-font-16 zan-c-gray-dark">@{{message.username}}</view>
+      </view>
+    </view>
+    <view style="padding: 1rem;">
+      <view class="zan-font-18 detail-body">{{message.body}}</view>
+      <!-- 图片显示控件 -->
+      <view class="zan-row">
+        <block wx:for="{{message.images}}" wx:for-item="images">
+          <image wx:if="{{message.images.length==1}}" class="detail-single-image zan-col zan-col-23" mode="aspectFit" src="{{images}}" catchtap="previewImage" data-current="{{images}}" data-all="{{message.images}}"></image>
+          <image wx:else class="zan-col zan-col-11 detail-list-images" mode="aspectFill" src="{{images}}" catchtap="previewImage" data-current="{{images}}" data-all="{{message.images}}"></image>
+        </block>
+      </view>
+      <!-- 显示引用的消息 -->
+      <block wx:if="{{message.quoted}}">
+        <view class="zan-row card-quoted" catchtap="toMessage" data-messageId="{{message.quoted.id}}">
+          <block wx:if="{{message.quoted.images.length>0}}">
+            <view class="zan-col zan-col-8">
+              <image class="single-image quote-iamge" mode="aspectFill" src="{{message.quoted.images[0]}}"></image>
+            </view>
+            <view class="zan-col zan-col-15 quote-inner">
+              <view class="zan-font-12  zan-c-gray-dark">@{{message.quoted.username}}</view>
+              <view class="zan-font-12 quote-body zan-c-gray-darker">{{message.quoted.body}}</view>
+            </view>
+          </block>
+          <block wx:else>
+            <view class="zan-col zan-col-22 quote-inner">
+              <view class="zan-font-12  zan-c-gray-dark">@{{message.quoted.username}}</view>
+              <view class="zan-font-12 quote-body zan-c-gray-darker">{{message.quoted.body}}</view>
+            </view>
+          </block>
+          <view class="zan-row">
+            <view class="icons-quote zan-col zan-col-4 zan-c-gray-darker fa fa-heart-o">
+              {{message.quoted.favo_count}}
+            </view>
+            <view class="icons-quote zan-col zan-col-4 zan-c-gray-darker fa fa-comments-o">
+              {{message.quoted.comment_count}}
+            </view>
+            <view class="icons-quote zan-col zan-col-6 zan-c-gray-darker fa fa-retweet">
+              {{message.quoted.quote_count}}
+            </view>
+          </view>
+        </view>
+      </block>
+    </view>
+    <view style="padding:1rem" class="zan-row">
+      <view class="zan-col zan-col-5">
+        <text class="nickname zan-font-16">{{message.quote_count}} </text>
+        <text class="zan-c-gray-dark zan-font-12">转发</text>
+      </view>
+      <view class="zan-col zan-col-5">
+        <text class="nickname zan-font-16">{{message.favo_count}} </text>
+        <text class="zan-c-gray-dark zan-font-12">喜爱</text>
+      </view>
+    </view>
+  </view>
+  <!-- 显示操作按钮 -->
+  <view class="zan-row icons-bar-detail">
+    <view class="zan-col zan-col-4">
+      <text decode="true">&nbsp;</text> </view>
+    <view wx:if="{{message.is_favoed}}" class="icons-bar-big zan-col zan-col-5 zan-c-red fa fa-heart" catchtap="favoMessage">
+    </view>
+    <view wx:else class="icons-bar-big zan-col zan-col-5 zan-c-gray-darker fa fa-heart-o" catchtap="favoMessage">
+    </view>
+    <view wx:if="{{message.is_comment}}" class="icons-bar-big zan-col zan-col-5 zan-c-blue fa fa-comments-o" catchtap="getFocus" data-message="{{message}}">
+    </view>
+    <view wx:else class="icons-bar-big zan-col zan-col-5 zan-c-gray-darker fa fa-comments-o" catchtap="getFocus" data-message="{{message}}">
+    </view>
+    <view wx:if="{{message.is_quoted}}" class="icons-bar-big zan-col zan-col-5 zan-c-green fa fa-retweet">
+    </view>
+    <view wx:else class="icons-bar-big zan-col zan-col-5 zan-c-gray-darker fa fa-retweet">
+    </view>
+    <view class="icons-bar-big zan-col zan-col-5 zan-c-gray-darker fa fa-envelope-o">
+    </view>
+  </view>
+  <!-- 显示回复的消息-->
+  <view class="comment-area">
+    <text class="zan-c-gray-dark zan-font-12">共有</text>
+    <text class="nickname zan-font-16"> {{message.comment_count}} </text>
+    <text class="zan-c-gray-dark zan-font-12">条评论：</text>
+    <view class="reply-card" wx:for="{{replies}}" wx:for-item="reply" catchtap="toMessage" data-messageId="{{reply.id}}">
+      <view style="padding:0.5rem" class="zan-row">
+        <view class="zan-col zan-col-3">
+          <image class="avatar-reply" src="{{reply.avatar}}"></image>
+        </view>
+        <view class="zan-col zan-col-20">
+          <text class="zan-font-14 zan-font-bold zan-c-gray-darker"> {{reply.nickname}}</text>
+          <text class="zan-font-12 zan-c-gray-dark zan-pull-right" decode="true"> &nbsp; {{reply.time_update}}</text>
+          <view class="zan-font-14 detail-body">{{reply.body}}</view>
+          <view class="zan-row" style="padding-top:0.4rem">
+            <view wx:if="{{reply.is_comment}}" class="icons-bar zan-col zan-col-4 zan-col-offset-17 zan-c-gray-dark fa fa-comments-o" catchtap="getFocus" data-message="{{reply}}">
+              {{reply.comment_count}}
+            </view>
+            <view wx:else class="icons-bar zan-col zan-col-4 zan-col-offset-17 zan-c-gray fa fa-comments-o" catchtap="getFocus" data-message="{{reply}}">
+              {{reply.comment_count}}
+            </view>
+            <view wx:if="{{reply.is_favoed}}" class="icons-bar zan-col zan-col-3 zan-c-gray-dark fa fa-heart" catchtap="favoButton" data-message="{{reply}}" data-idx="{{index}}">
+              {{reply.favo_count}}
+            </view>
+            <view wx:else class="icons-bar zan-col zan-col-3 zan-c-gray fa fa-heart-o" catchtap="favoButton" data-message="{{reply}}" data-idx="{{index}}">
+              {{reply.favo_count}}
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+  <!-- 回复框 -->
+  <view class="reply-input" style="padding:0.5rem">
+    <view class="zan-row reply-tools" hidden="{{toolsHidden}}">
+      <view class="fa fa-lg fa-picture-o zan-col zan-col-3 zan-c-gray-darker"></view>
+      <view class="fa fa-lg fa-at zan-col zan-col-16 zan-c-gray-darker"></view>
+      <button class="zan-btn zan-btn--small zan-btn--primary" bindtap="replySubmit">回复</button>
+    </view>
+    <textarea value="{{replyValue}}" fixed="true" name="textarea" bindfocus="showTools" bindinput="getText" class="reply-textarea zan-c-gray-darker zan-font-16" focus="{{focus}}" auto-height="true" maxlength="260" cursor-spacing="4" show-confirm-bar="" placeholder="回复给@{{replyTo.username}}" />
+  </view>
+</view>

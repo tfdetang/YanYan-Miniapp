@@ -1,7 +1,9 @@
 {
   "pages": [
     "pages/index/index",
-    "pages/logs/logs"
+    "pages/logs/logs",
+    "pages/message_detail/message_detail",
+    "pages/editor/editor"
   ],
   "window": {
     "backgroundTextStyle": "light",
@@ -10,7 +12,7 @@
     "navigationBarTextStyle": "white"
   },
   "tabBar": {
-    "selectedColor":"#00aa00",
+    "selectedColor":"#dd6f8c",
     "list": [
       {
         "pagePath": "pages/index/index",

@@ -285,9 +285,9 @@ class User(Base, Utils, db.Model, UserMixin):
         quoted_message = db.session.query(Message).filter(Message.id == quoted_id).one()
         quoted_message.quote_count += 1
         self.quoted_messages.append(quoted_message)
-        quoted_message.update()
         if body:
             self.commented_messages.append(quoted_message)  # 如果转发的时候带文字，则也算入评论中
+            quoted_message.comment_count += 1
             message = self.post_message(body)
             message.quote_id = quoted_id
             message.type = 2
@@ -304,6 +304,7 @@ class User(Base, Utils, db.Model, UserMixin):
                           associate_user=quoted_message.author_id,
                           type=4)
         event.save()
+        quoted_message.update()
         self.update()
         return event
 
@@ -408,7 +409,7 @@ class Message(Base, db.Model, Utils):
     __analyzer__ = ChineseAnalyzer()
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    body = Column(String(260))
+    body = Column(Text(260))
     time_create = Column(String(45))
     time_update = Column(String(45))
     comment_count = Column(Integer)
@@ -518,12 +519,13 @@ if __name__ == '__main__':
         # user1.set_profile()
         # user2.set_profile()
         # message7.add_images('msg_img_WrxKYo05sp')
-        user3.create_message('测试一下下拉刷新功能！！')
+        #user3.create_message('测试一下下拉刷新功能！！')
 
 
         # user2.quote_message(body='', quoted_id=2)
-        #user3.quote_message(body='', quoted_id=7)
-        # user2.comment_message('评论测试', 2)
+        # user3.quote_message(body='', quoted_id=7)
+        user2.comment_message('测试评论的显示，这是第一条评论', 13)
+        user3.comment_message('这是第二条评论', 13)
         # print(user2.is_quoted_message(2))
         # user3.create_message('2张图片显示。')
 

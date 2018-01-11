@@ -29,6 +29,8 @@ lm.init_app(app)
 @lm.request_loader
 def load_user_from_request(request):
     login_key = request.args.get('login_key')
+    if not login_key:
+        login_key = request.form.get('login_key')
     if login_key:
         try:
             token = db.session.query(Token).filter(Token.secret == login_key).one()
@@ -187,8 +189,7 @@ def photo_2_dict(photos):
     return photo_list
 
 
-@app.route('/messages/<id>', methods=['GET'])
-@login_required
+@app.route('/messages/<id>/', methods=['GET'])
 def get_message(id):
     message = db.session.query(Message).filter(Message.id == id).one()
     message_dict = message_2_dict(message)
@@ -196,6 +197,18 @@ def get_message(id):
         quoted = db.session.query(Message).filter(Message.id == message.quote_id).one()
         message_dict['quoted'] = message_2_dict(quoted)
     return jsonify(message_dict)
+
+
+@app.route('/messages/<id>/replies/', methods=['GET'])
+def get_replies(id):
+    limit = 10
+    start = request.args.get('start', '0')
+    query = db.session.query(Message).filter(Message.quote_id == id).order_by(Message.id.desc())
+    replies = query.offset(int(start)).limit(limit)
+    replies_list = []
+    for i in replies:
+        replies_list.append(message_2_dict(i))
+    return jsonify({'count':len(replies_list),'replies':replies_list})
 
 
 @app.route('/events/', methods=['GET'])
@@ -220,7 +233,7 @@ def get_events():
 # ---------------------------------------推文操作相关接口-----------------------------
 
 
-@app.route('/message/favo_message/', methods=['GET','POST'])
+@app.route('/message/favo/', methods=['GET','POST'])
 @login_required
 def favo_message():
     message_id = request.args.get('message_id', '0')
@@ -238,13 +251,14 @@ def favo_message():
     return jsonify({'favo':favo,'count':str(favo_count)})
 
 
-@app.route('/message/reply_message_<id>/', methods=['GET','POST'])
+@app.route('/message/reply/', methods=['POST'])
 @login_required
-def reply_message(id):
-    comment = request.args.get('comment', ' ')
+def reply_message():
+    message_id = request.form.get('message_id', '0')
+    comment = request.form.get('comment', ' ')
     try:
-        message = db.session.query(Message).filter(Message.id == int(id)).one()
+        message = db.session.query(Message).filter(Message.id == int(message_id)).one()
     except:
         return jsonify({'error': 'wrong_message_id'})
-    g.user.comment_message(comment, int(id))
+    g.user.comment_message(comment, int(message_id))
     return jsonify({'status': 'success'})

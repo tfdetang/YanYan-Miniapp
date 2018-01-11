@@ -33,6 +33,9 @@ App({
       return util.getRequest(url, data)
     }).then(res => {
       wx.setStorageSync('userKey', res.data)
+      that.userInfo().then(res => {
+        wx.setStorageSync('userinfo', res.data)
+      })
     })
   },
 
@@ -42,30 +45,60 @@ App({
     var data = {
       login_key: wx.getStorageSync('userKey').login_key
     }
-    return util.getRequest(url,data)
+    return util.getRequest(url, data)
   },
   globalData: {
     userInfo: null
   },
 
-  loadEvents: function(start,direction) {
+  loadEvents: function (start, direction) {
     var that = this
     var url = config.getHostUrl() + 'events/'
     var data = {
       login_key: wx.getStorageSync('userKey').login_key,
-      start:start,
-      direction:direction
+      start: start,
+      direction: direction
     }
-    return util.getRequest(url,data)
+    return util.getRequest(url, data)
   },
 
-  favoMessage: function(messageId) {
+  favoMessage: function (messageId) {
     var that = this
-    var url = config.getHostUrl() + 'message/favo_message/'
+    var url = config.getHostUrl() + 'message/favo/'
     var data = {
       login_key: wx.getStorageSync('userKey').login_key,
       message_id: messageId
     }
-    return util.getRequest(url,data)
+    return util.getRequest(url, data)
+  },
+
+  loadMessage: function(messageId) {
+    var that = this
+    var url = config.getHostUrl() + 'messages/' + messageId
+    var data = {
+      login_key: wx.getStorageSync('userKey').login_key,
+    }
+    return util.getRequest(url, data)
+  },
+
+  loadReplies: function(messageId,start) {
+    var that = this
+    var url = config.getHostUrl() + 'messages/' + messageId + '/replies/'
+    var data = {
+      login_key: wx.getStorageSync('userKey').login_key,
+      start: start
+    }
+    return util.getRequest(url, data)
+  },
+
+  messageReply: function(messageId,comment){
+    var that = this
+    var url = config.getHostUrl() + 'message/reply/'
+    var data = {
+      login_key: wx.getStorageSync('userKey').login_key,
+      message_id: messageId,
+      comment:comment
+    }
+    return util.postRequest(url, data)
   }
 })
