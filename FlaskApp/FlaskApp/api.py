@@ -204,11 +204,20 @@ def get_replies(id):
     limit = 10
     start = request.args.get('start', '0')
     query = db.session.query(Message).filter(Message.quote_id == id).order_by(Message.id.desc())
+    reply_count = query.count()
     replies = query.offset(int(start)).limit(limit)
     replies_list = []
     for i in replies:
-        replies_list.append(message_2_dict(i))
-    return jsonify({'count':len(replies_list),'replies':replies_list})
+        reply = message_2_dict(i)
+        query = db.session.query(Message).filter(Message.quote_id == i.id).order_by(Message.id.desc())
+        replies_2_reply = query.limit(3)
+        replies_2_list = []
+        for j in replies_2_reply:
+            reply_2_reply = message_2_dict(j)
+            replies_2_list.append(reply_2_reply)
+        reply['reply'] = replies_2_list
+        replies_list.append(reply)
+    return jsonify({'count':reply_count,'replies':replies_list})
 
 
 @app.route('/events/', methods=['GET'])
@@ -231,6 +240,12 @@ def get_events():
     return jsonify(result)
 
 # ---------------------------------------推文操作相关接口-----------------------------
+
+
+@app.route('/qiniu/uptoken', methods=['GET'])
+def generate_upload_token():
+    token = tools.qiniu_token()
+    return jsonify({'uptoken':token})
 
 
 @app.route('/message/favo/', methods=['GET','POST'])
@@ -262,3 +277,40 @@ def reply_message():
         return jsonify({'error': 'wrong_message_id'})
     g.user.comment_message(comment, int(message_id))
     return jsonify({'status': 'success'})
+
+
+@app.route('/message/retweet/', methods=['POST'])
+@login_required
+def retweet_message():
+    message_id = request.form.get('message_id', '0')
+    body = request.form.get('body', ' ')
+    try:
+        message = db.session.query(Message).filter(Message.id == int(message_id)).one()
+    except:
+        return jsonify({'error': 'wrong_message_id'})
+    g.user.quote_message(body=body, quoted_id=message_id)
+    return jsonify({'status': 'success', 'quotecount':message.quote_count})
+
+
+@app.route('/message/', methods=['POST'])
+@login_required
+def post_message():
+    body = request.form.get('body', ' ')
+    message = g.user.create_message(body)
+    return jsonify({'status':'success','messageId':message.id})
+
+
+@app.route('/message/uploadimg/', methods=['POST'])
+@login_required
+def add_img():
+    message_id = request.form.get('message_id', '0')
+    url = request.form.get('url', '')
+    try:
+        message = db.session.query(Message).filter(Message.id == int(message_id)).one()
+    except:
+        return jsonify({'error': 'wrong_message_id'})
+    if message.author_id == g.user.id:
+        message.add_images(url)
+        return jsonify({'status':'success', 'messageId':message.id})
+    else:
+        return jsonify({'error': 'no_permission'})

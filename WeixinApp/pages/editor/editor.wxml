@@ -1,7 +1,17 @@
 <!--pages/editor/editor.wxml-->
 <view class="container">
+  <!--工具栏-->
+  <view class="upload-field">
+    <view class="tool-container zan-row">
+      <view catchtap="uploadImg" class="tool-logo fa fa-lg fa-picture-o zan-col zan-col-4"></view>
+      <view class="tool-logo fa fa-lg fa-at zan-col zan-col-4"></view>
+      <view class="zan-col zan-col-7 zan-col-offset-9 ">
+        <button class="zan-btn {{buttonLoading}} zan-btn--small zan-btn--primary fa fa-paper-plane-o" catchtap="sendMessage">发送</button>
+      </view>
+    </view>
+  </view>
   <!--输入帖子内容的区域-->
-  <view class="zan-row" style="padding:1rem">
+  <view class="zan-row" style="padding:1rem; margin-top:1.5rem">
     <view class="zan-col zan-col-4">
       <image class="avatar" src="{{avatar}}"></image>
     </view>
@@ -9,17 +19,15 @@
       <textarea value="{{textValue}}" name="textarea" bindinput="getText" class="reply-textarea" focus="{{focus}}" auto-height="true" maxlength="260" cursor-spacing="10" show-confirm-bar="" placeholder="{{initText}}" />
     </view>
   </view>
-  <!--工具栏-->
-  <view class="upload-field" style="padding:1rem">
-    <view class="tool-container zan-row">
-      <view catchtap="uploadImg" class="fa fa-lg fa-picture-o zan-col zan-col-3 zan-c-gray-darker"></view>
-      <view class="fa fa-lg fa-at zan-col zan-col-3 zan-c-gray-darker"></view>
-    </view>
-  </view>
-  <swiper indicator-dots="true" class="image-container" circular="true">
-    <block wx:for="{{imgList}}" wx:for-item="img">
+  <text class="zan-c-gray zan-font-14" style="margin-left:1rem">已插入图片: {{imgLength}}/4</text>
+  <swiper indicator-dots="true" indicator-color="#dd6f8c" class="image-container" current="{{swiperCurrent}}" circular="true">
+    <block wx:for="{{imgList}}" wx:for-item="img" wx:for-index="idx">
       <swiper-item>
-        <image class="swiper-img" src="{{img}}" mode="aspectFill"></image>
+        <view class="badge-close" catchtap="popImg" data-index="{{idx}}">
+          <view class="fa fa-times close"></view>
+        </view>
+        <image class="swiper-img" src="{{img}}" mode="aspectFill">
+        </image>
       </swiper-item>
     </block>
   </swiper>

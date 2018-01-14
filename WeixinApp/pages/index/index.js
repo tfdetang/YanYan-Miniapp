@@ -9,18 +9,19 @@ Page({
     message_list: [],
     isHideLoadMore: true,
   },
-  onLoad: function () {
+  onLoad: function (option) {
+    console.log(option)
     var that = this
     app.loadEvents(0, 0).then(res => {
       var list_message = res.data.message_list
       that.setData({
         message_list: list_message,
       })
-      wx.setStorageSync('messageBottom', list_message[list_message.length - 1].event_id)
+      wx.setStorageSync('messageBottom', list_message[list_message.length - 1].event_id) //记录最下面一条消息的id
     })
   },
 
-  onPullDownRefresh: function () {
+  onPullDownRefresh: function () { //下拉刷新信息
     var that = this
     app.loadEvents(0, 0).then(res => {
       wx.showNavigationBarLoading()
@@ -39,7 +40,7 @@ Page({
     })
   },
 
-  onReachBottom: function () {
+  onReachBottom: function () { //浏览到底部自动更新信息
     var that = this
     that.setData({
       isHideLoadMore: false
@@ -64,25 +65,26 @@ Page({
     })
   },
 
-  previewImage: function (event) {
+  previewImage: function (event) { // 点击图片直接显示图片预览
     var current = event.currentTarget.dataset.current
     var urls = event.currentTarget.dataset.all
     wx.previewImage({
-      current: current, // 当前显示图片的http链接
-      urls: urls // 需要预览的图片http链接列表
+      current: current,
+      urls: urls
     })
   },
 
-  toMessage: function (event) {
+  toMessage: function (event) { // 跳转链接
     var that = this
     var messageId = event.currentTarget.dataset.messageid
-    var url = '../message_detail/message_detail?messageid=' + messageId
+    var focus = event.currentTarget.dataset.focus
+    var url = '../message_detail/message_detail?messageid=' + messageId + '&focus=' + focus
     wx.navigateTo({
       url: url,
     })
   },
 
-  toEditor: function (event) {
+  toEditor: function (event) { // 跳转到发推文的页面
     var that = this
     var url = '../editor/editor'
     wx.navigateTo({
@@ -90,7 +92,7 @@ Page({
     })
   },
 
-  favoButton: function (event) {
+  favoButton: function (event) { //点击喜爱
     wx.showToast({
       icon: 'loading',
       mask: true,
@@ -106,6 +108,37 @@ Page({
       params[favoCount] = res.data.count
       params[isFavoed] = res.data.favo
       that.setData(params)
+    })
+  },
+
+  retweetButton: function (event) { //点击转发
+    var that = this
+    var index = event.currentTarget.dataset.idx
+    var messageId = event.currentTarget.dataset.message.id
+    var url = '../message_detail/message_detail?messageid=' + messageId + '&focus=true'
+    var quoteCount = "message_list[" + index + "].quote_count"
+    var isQuoted = "message_list[" + index + "].is_quoted"
+    wx.showActionSheet({
+      itemList: ['转发', '转发并回复'],
+      success: function (res) {
+        if (res.tapIndex == 0){  //直接转发
+          app.retweetMessage(messageId,"").then(res => {
+            var params = {}
+            params[quoteCount] = res.data.quotecount
+            params[isQuoted] = true
+            that.setData(params)
+          })
+        }else{ // 转发并回复
+          wx.navigateTo({
+            url: url + '&retweetCheck=true',
+          })
+        }
+        console.log(res.tapIndex)
+        console.log(messageId)
+      },
+      fail: function (res) {
+        console.log(res.errMsg)
+      }
     })
   }
 })

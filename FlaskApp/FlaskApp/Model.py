@@ -486,7 +486,7 @@ class Image(Base, db.Model, Utils):
     relate_message = Column(ForeignKey('message.id'))
     uploader = Column(ForeignKey('user.id'))
     uploade_time = Column(String(45))
-    url = Column(String(20))
+    url = Column(String(50))
 
     def full_url(self):
         base_url = app.config['BASE_URL'] + '/'

@@ -12,6 +12,7 @@ import arrow
 
 from FlaskApp.config import QINIU_AK, QINIU_SK, BUCKET
 
+
 def generate_token(length=''):
     '''
     生成一个随机字符串作为token
@@ -58,10 +59,15 @@ def timestamp_2_str(timestamp):
 
 
 def timestamp_2_zh(timestamp):
+    '''
+    将时间戳转换为中文语义模式
+    :param timestamp: 时间戳
+    :return: 中文时间
+    '''
     return arrow.Arrow.utcfromtimestamp(timestamp).humanize(locale='zh_cn')
 
 
-def save_img(img_url,file_name):
+def save_img(img_url, file_name):
     '''
     将url上的图片文件保存到七牛云
     :param img_url: 图片地址
@@ -77,8 +83,13 @@ def save_img(img_url,file_name):
     return info
 
 
+def qiniu_token():
+    q = Auth(QINIU_AK, QINIU_SK)
+    return q.upload_token(BUCKET, expires=3600)
+
+
 def match_channel(string):
-    return re.findall(r"#.+?[\s,./;'\\，。/；’、]",string)
+    return re.findall(r"#.+?[\s,./;'\\，。/；#’、]", string)
 
 
 class MomentJs(object):
@@ -101,8 +112,10 @@ class MomentJs(object):
     def fromNow(self):
         return self.render("fromNow()")
 
+
 # -------------------------------------test-------------------------------------------
 
 if __name__ == '__main__':
     time = generate_timestamp()
     print(arrow.Arrow.utcfromtimestamp(time).humanize(locale='zh_cn'))
+    print(qiniu_token())

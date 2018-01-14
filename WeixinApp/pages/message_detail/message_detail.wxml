@@ -1,4 +1,33 @@
 <view class="container">
+  <!-- 显示回复的推文内容 -->
+  <view class="zan-panel" hidden="{{originHidden}}" catchtap="toMessage" data-messageId="{{message.quoted.id}}">
+    <view class="zan-row detail-panel">
+      <view class="zan-col zan-col-4">
+        <image class="avatar" src="{{message.quoted.avatar}}"></image>
+      </view>
+      <view class="zan-col zan-col-20">
+        <text class="zan-font-16 zan-font-bold">{{message.quoted.nickname}}</text>
+        <text class="zan-font-16 zan-c-gray-dark zan-pull-right" decode="true"> &nbsp; {{message.quoted.time_update}}</text>
+        <view class="zan-font-16 zan-c-gray-dark">@{{message.quoted.username}}</view>
+      </view>
+    </view>
+    <view style="padding: 1rem;">
+      <view class="zan-font-18 detail-body">{{message.quoted.body}}</view>
+      <!-- 图片显示控件 -->
+      <view class="zan-row">
+        <block wx:for="{{message.quoted.images}}" wx:for-item="quotedimg">
+          <image wx:if="{{message.quoted.images.length==1}}" class="detail-single-image zan-col zan-col-23" mode="aspectFit" src="{{quotedimg}}" catchtap="previewImage" data-current="{{quotedimg}}" data-all="{{message.quoted.images}}"></image>
+          <image wx:else class="zan-col zan-col-11 detail-list-images" mode="aspectFill" src="{{quotedimg}}" catchtap="previewImage" data-current="{{quotedimg}}" data-all="{{message.quoted.images}}"></image>
+        </block>
+      </view>
+    </view>
+  </view>
+  <view class="reply-line zan-panel-title" wx:if="{{message.quoted && message.type==1}}">
+    回复了
+    <text class="zan-c-gray-darker" decode="true">{{message.quoted.nickname}} &nbsp;</text>
+    <view class="zan-tag zan-c-gray-darker" hidden="{{!originHidden}}" catchtap="showOrigin">显示原推文</view>
+  </view>
+  <!-- 显示推文内容 -->
   <view class="zan-panel">
     <view class="zan-row detail-panel">
       <view class="zan-col zan-col-4">
@@ -20,7 +49,7 @@
         </block>
       </view>
       <!-- 显示引用的消息 -->
-      <block wx:if="{{message.quoted}}">
+      <block wx:if="{{message.quoted && message.type==2}}">
         <view class="zan-row card-quoted" catchtap="toMessage" data-messageId="{{message.quoted.id}}">
           <block wx:if="{{message.quoted.images.length>0}}">
             <view class="zan-col zan-col-8">
@@ -74,9 +103,9 @@
     </view>
     <view wx:else class="icons-bar-big zan-col zan-col-5 zan-c-gray-darker fa fa-comments-o" catchtap="getFocus" data-message="{{message}}">
     </view>
-    <view wx:if="{{message.is_quoted}}" class="icons-bar-big zan-col zan-col-5 zan-c-green fa fa-retweet">
+    <view wx:if="{{message.is_quoted}}" class="icons-bar-big zan-col zan-col-5 zan-c-green fa fa-retweet" catchtap="retweetButton">
     </view>
-    <view wx:else class="icons-bar-big zan-col zan-col-5 zan-c-gray-darker fa fa-retweet">
+    <view wx:else class="icons-bar-big zan-col zan-col-5 zan-c-gray-darker fa fa-retweet" catchtap="retweetButton">
     </view>
     <view class="icons-bar-big zan-col zan-col-5 zan-c-gray-darker fa fa-envelope-o">
     </view>
@@ -92,9 +121,13 @@
           <image class="avatar-reply" src="{{reply.avatar}}"></image>
         </view>
         <view class="zan-col zan-col-20">
-          <text class="zan-font-14 zan-font-bold zan-c-gray-darker"> {{reply.nickname}}</text>
+          <text class="zan-font-14 zan-font-bold zan-c-gray-darker"> {{reply.nickname}} </text>
+          <text wx:if="{{reply.type == 2}}" class="zan-c-blue fa fa-retweet"></text>
           <text class="zan-font-12 zan-c-gray-dark zan-pull-right" decode="true"> &nbsp; {{reply.time_update}}</text>
           <view class="zan-font-14 detail-body">{{reply.body}}</view>
+          <view class="zan-font-12 zan-c-gray-dark zan-row reply" wx:for="{{reply.reply}}" wx:for-item="reply_">
+            {{reply_.nickname}}: {{reply_.body}}
+          </view>
           <view class="zan-row" style="padding-top:0.4rem">
             <view wx:if="{{reply.is_comment}}" class="icons-bar zan-col zan-col-4 zan-col-offset-17 zan-c-gray-dark fa fa-comments-o" catchtap="getFocus" data-message="{{reply}}">
               {{reply.comment_count}}
@@ -115,11 +148,35 @@
   </view>
   <!-- 回复框 -->
   <view class="reply-input" style="padding:0.5rem">
-    <view class="zan-row reply-tools" hidden="{{toolsHidden}}">
-      <view class="fa fa-lg fa-picture-o zan-col zan-col-3 zan-c-gray-darker"></view>
-      <view class="fa fa-lg fa-at zan-col zan-col-16 zan-c-gray-darker"></view>
-      <button class="zan-btn zan-btn--small zan-btn--primary" bindtap="replySubmit">回复</button>
+    <!-- 图片上传占位 -->
+    <view class="zan-row tools-img" hidden="{{uploadHidden}}">
+      <block wx:for="{{imgList}}" wx:for-item="img" wx:for-index="idx">
+        <view class="zan-col zan-col-6 uploaded-img">
+          <view class="badge-close" catchtap="popImg" data-index="{{idx}}">
+            <view class="fa fa-times close"></view>
+          </view>
+          <image class="swiper-img" src="{{img}}" mode="aspectFill">
+          </image>
+        </view>
+      </block>
     </view>
-    <textarea value="{{replyValue}}" fixed="true" name="textarea" bindfocus="showTools" bindinput="getText" class="reply-textarea zan-c-gray-darker zan-font-16" focus="{{focus}}" auto-height="true" maxlength="260" cursor-spacing="4" show-confirm-bar="" placeholder="回复给@{{replyTo.username}}" />
+    <view class="zan-row">
+      <view class="zan-col zan-col-20">
+        <!-- 工具栏 -->
+        <view class="zan-row reply-tools" hidden="{{toolsHidden}}">
+          <view catchtap="uploadImg" class="fa fa-lg fa-picture-o tool-logo zan-col zan-col-5 zan-c-gray-darker"></view>
+          <view class="fa fa-lg fa-at tool-logo zan-col zan-col-5 zan-c-gray-darker"></view>
+          <checkbox-group bindchange="checkBox" class="tool-logo zan-col zan-col-5 zan-col-offset6 zan-font-12 zan-pull-right">
+            <checkbox value="retweet" checked="{{retweetCheck}}">转发</checkbox>
+          </checkbox-group>
+        </view>
+        <!-- 回复输入框 -->
+        <textarea value="{{replyValue}}" fixed="true" name="textarea" bindfocus="showTools" bindinput="getText" class="reply-textarea zan-c-gray-darker zan-font-16" focus="{{focus}}" auto-height="true" maxlength="260" cursor-spacing="5" show-confirm-bar="" placeholder="回复给@{{replyTo.username}}"
+        />
+      </view>
+      <view class="zan-col zan-col-4">
+        <button class="zan-btn zan-btn--small zan-btn--primary" bindtap="replySubmit">回复</button>
+      </view>
+    </view>
   </view>
 </view>

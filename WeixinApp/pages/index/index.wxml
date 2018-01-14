@@ -12,7 +12,7 @@
       </view>
     </view>
     <!-- 显示消息的正文内容 -->
-    <view wx:if="{{item.type != 7}}" class="zan-panel" catchtap="toMessage" data-messageId="{{item.id}}">
+    <view wx:if="{{item.type != 7}}" class="zan-panel" catchtap="toMessage" data-messageId="{{item.id}}" data-focus="">
       <view wx:if="{{item.type == 5}}" class="message-header">
         <text class="fa fa-heart zan-c-gray"></text>
         <text decode='true'>&nbsp;</text>
@@ -34,7 +34,7 @@
           <text class="zan-font-12 zan-c-gray-dark" decode='true'> &nbsp; {{item.time}}</text>
           <view class="zan-font-16 zan-c-gray-darker">{{item.body}}</view>
           <!-- 图片显示控件 -->
-          <view class='zan-row'>
+          <view class='zan-row' style="padding-top:0.5rem">
             <block wx:for="{{item.images}}" wx:for-item="images">
               <image wx:if="{{item.images.length==1}}" class="zan-col zan-col-22 single-image" mode="aspectFit" src="{{images}}" catchtap="previewImage" data-current="{{images}}" data-all="{{item.images}}"></image>
               <image wx:else class="zan-col zan-col-11 message-list-images" mode="aspectFill" src="{{images}}" catchtap="previewImage" data-current="{{images}}" data-all="{{item.images}}"></image>
@@ -42,7 +42,7 @@
           </view>
           <!-- 显示引用的消息 -->
           <block wx:if="{{item.quoted}}">
-            <view class="zan-row card-quoted" catchtap="toMessage" data-messageId="{{item.quoted.id}}">
+            <view class="zan-row card-quoted" catchtap="toMessage" data-messageId="{{item.quoted.id}}" data-focus="">
               <block wx:if="{{item.quoted.images.length>0}}">
                 <view class="zan-col zan-col-8">
                   <image class="single-image quote-iamge" mode="aspectFill" src="{{item.quoted.images[0]}}"></image>
@@ -82,16 +82,16 @@
             <view wx:else class="icons-bar zan-col zan-col-6 zan-c-gray-darker fa fa-heart-o" catchtap="favoButton" data-message="{{item}}" data-idx="{{index}}">
               {{item.favo_count}}
             </view>
-            <view wx:if="{{item.is_comment}}" class="icons-bar zan-col zan-col-6 zan-c-blue fa fa-comments-o">
+            <view wx:if="{{item.is_comment}}" class="icons-bar zan-col zan-col-6 zan-c-blue fa fa-comments-o" catchtap="toMessage" data-messageId="{{item.id}}" data-focus="true">
               {{item.comment_count}}
             </view>
-            <view wx:else class="icons-bar zan-col zan-col-6 zan-c-gray-darker fa fa-comments-o">
+            <view wx:else class="icons-bar zan-col zan-col-6 zan-c-gray-darker fa fa-comments-o" catchtap="toMessage" data-messageId="{{item.id}}" data-focus="true">
               {{item.comment_count}}
             </view>
-            <view wx:if="{{item.is_quoted}}" class="icons-bar zan-col zan-col-6 zan-c-green fa fa-retweet">
+            <view wx:if="{{item.is_quoted}}" class="icons-bar zan-col zan-col-6 zan-c-green fa fa-retweet" catchtap="retweetButton" data-message="{{item}}" data-idx="{{index}}">
               {{item.quote_count}}
             </view>
-            <view wx:else class="icons-bar zan-col zan-col-6 zan-c-gray-darker fa fa-retweet">
+            <view wx:else class="icons-bar zan-col zan-col-6 zan-c-gray-darker fa fa-retweet" catchtap="retweetButton" data-message="{{item}}" data-idx="{{index}}">
               {{item.quote_count}}
             </view>
             <view class="icons-bar zan-col zan-col-6 zan-c-gray-darker fa fa-envelope-o">

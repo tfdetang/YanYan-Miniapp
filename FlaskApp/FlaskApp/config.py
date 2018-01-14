@@ -13,7 +13,7 @@ BASE_URL = 'http://p26dtxwn1.bkt.clouddn.com'
 
 SECRET_KEY = 'you-will-never-guess'
 UPLOAD_TEMP = '/var/www/FlaskApp/FlaskApp/static/temp'
-SQLALCHEMY_DATABASE_URI = 'mysql://root:123456@draket.asuscomm.com:3306/weixinapp'
+SQLALCHEMY_DATABASE_URI = 'mysql://root:123456@draket.asuscomm.com:3306/weixinapp?charset=utf8'
 SQLALCHEMY_POOL_SIZE = 50
 SQLALCHEMY_POOL_TIMEOUT = 10
 SQLALCHEMY_TRACK_MODIFICATIONS = True
