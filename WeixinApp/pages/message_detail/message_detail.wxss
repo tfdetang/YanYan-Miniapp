@@ -9,6 +9,20 @@
   border-radius: 0.5rem;
 }
 
+.reply-list-images {
+  width: 6rem;
+  height: 6rem;
+  padding: 0.2rem;
+  display: flex;
+  flex-wrap: wrap;
+  border-radius: 0.5rem;
+}
+
+.reply-single-image {
+  max-height: 15rem;
+  border-radius: 0.3rem;
+}
+
 .zan-panel{
   position: relative;
   margin-top:0;
@@ -16,6 +30,7 @@
 }
 
 .detail-single-image {
+  max-height: 40rem;
   padding-top: 0.5rem;
   border-radius: 0.3rem;
   width: 100%;
@@ -130,7 +145,7 @@
 .swiper-img{
   height: 4.2rem;
   width: 4.2rem;
-  box-shadow: 1px 2px 5px 1px rgba(100,100,100,0.5)
+  box-shadow: 1px 2px 3px 1px rgba(100,100,100,0.3)
 }
 
 .badge-close{

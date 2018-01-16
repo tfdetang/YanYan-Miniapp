@@ -1,0 +1,104 @@
+<!-- 消息卡片组件 -->
+
+<!-- 转发消息模板 -->
+<template name="quote">
+  <view class="zan-row card-quoted" catchtap="toMessage" data-messageId="{{quoted.id}}" data-focus="">
+    <block wx:if="{{quoted.images.length>0}}">
+      <view class="zan-col zan-col-8">
+        <image class="single-image quote-iamge" mode="aspectFill" src="{{quoted.images[0]}}"></image>
+      </view>
+      <view class="zan-col zan-col-15 quote-inner">
+        <view class="zan-font-12  zan-c-gray-dark">@{{quoted.username}}</view>
+        <view class="zan-font-12 quote-body zan-c-gray-darker">{{quoted.body}}</view>
+      </view>
+      <view class="zan-col zan-col-1">
+        <view class="zan-arrow quote-arrow"></view>
+      </view>
+    </block>
+    <block wx:else>
+      <view class="zan-col zan-col-23 quote-inner">
+        <view class="zan-font-12  zan-c-gray-dark">@{{quoted.username}}</view>
+        <view class="zan-font-12 quote-body zan-c-gray-darker">{{quoted.body}}</view>
+      </view>
+      <view class="zan-col zan-col-1">
+        <view class="zan-arrow quote-arrow"></view>
+      </view>
+    </block>
+  </view>
+</template>
+
+<!-- 图片显示模板 -->
+<template name="imgPlacehoder">
+  <block wx:for="{{images}}" wx:for-item="image">
+    <image wx:if="{{images.length==1}}" class="zan-col zan-col-22 single-image" mode="aspectFill" src="{{image}}" catchtap="previewImage" data-current="{{image}}" data-all="{{images}}"></image>
+    <image wx:else class="zan-col zan-col-11 message-list-images" mode="aspectFill" src="{{image}}" catchtap="previewImage" data-current="{{image}}" data-all="{{images}}"></image>
+  </block>
+</template>
+
+
+<!-- message_list模板 -->
+<template name="messageCard">
+  <view wx:for="{{message_list}}">
+    <!-- 显示关注、转发与喜爱等信息，显示在panel的行间 -->
+    <view wx:if="{{(item.type == 7)}}" class="zan-panel-title">
+      <view wx:if="{{item.type == 7}}">
+        <view class='zan-tag zan-c-gray-darker' catchtap="toUser" data-userid="{{item.sponsor_id}}">{{item.sponsor_nickname}}</view> {{item.time}} 关注了
+        <view class='zan-tag zan-c-gray-darker' catchtap="toUser" data-userid="{{item.associate_id}}">{{item.associate_nickname}}</view>
+      </view>
+    </view>
+    <!-- 显示消息的正文内容 -->
+    <view wx:if="{{item.type != 7}}" class="zan-panel" catchtap="toMessage" data-messageId="{{item.id}}" data-focus="">
+      <view wx:if="{{item.type == 5}}" class="message-header">
+        <text class="fa fa-heart zan-c-gray"></text>
+        <text decode='true'>&nbsp;</text>
+        <view class='zan-tag zan-c-gray-darker' catchtap="toUser" data-userid="{{item.sponsor_id}}">{{item.sponsor_nickname}} </view>
+        <text class='zan-c-gray-darker zan-font-12'> {{item.time}} 喜欢了</text>
+      </view>
+      <view wx:elif="{{item.type == 4}}" class='message-header'>
+        <text class="fa fa-retweet zan-c-gray"></text>
+        <text decode='true'>&nbsp;</text>
+        <view class='zan-tag zan-c-gray-darker' catchtap="toUser" data-userid="{{item.sponsor_id}}">{{item.sponsor_nickname}} </view>
+        <text class='zan-c-gray-darker zan-font-12'> {{item.time}} 转发了</text>
+      </view>
+      <view wx:elif="{{item.type == 3}}" class='message-header'>
+        <text class="fa fa-comments zan-c-gray"></text>
+        <text decode='true'>&nbsp;</text>
+        <view class='zan-tag zan-c-gray-darker' catchtap="toUser" data-userid="{{item.sponsor_id}}">{{item.nickname}} </view>
+        <text class='zan-c-gray-darker zan-font-12'> {{item.time}} 回复到</text>
+      </view>
+      <view style="padding: 1rem;" class="zan-row">
+        <view class="zan-col zan-col-4">
+          <image class="avatar" src="{{item.avatar}}" catchtap="toUser" data-userid="{{item.author_id}}"></image>
+        </view>
+        <view class="zan-col zan-col-20">
+          <text class="zan-font-16 zan-font-bold" catchtap="toUser" data-userid="{{item.author_id}}">{{item.nickname}}</text>
+          <text class="zan-font-12 zan-c-gray-dark" decode='true'> &nbsp; {{item.time}}</text>
+          <view class="zan-font-16 zan-c-gray-darker">{{item.body}}</view>
+          <!-- 图片显示控件 -->
+          <view class='zan-row' style="padding-top:0.5rem">
+            <template is="imgPlacehoder" data="{{ ...item }}" />
+          </view>
+          <!-- 显示引用的消息 -->
+          <block wx:if="{{item.quoted && item.type != 3}}">
+            <template is="quote" data="{{ ...item }}" />
+          </block>
+          <!-- 显示每条消息的页脚 -->
+          <view class="zan-row">
+            <text>\n</text>
+            <view class="icons-bar zan-col zan-col-6 fa {{item.is_favoed==true? 'zan-c-red fa-heart':'zan-c-gray-darker fa-heart-o'}}" catchtap="favoButton" data-message="{{item}}" data-listname="{{listName}}" data-idx="{{index}}">
+              {{item.favo_count}}
+            </view>
+            <view class="icons-bar zan-col zan-col-6 fa {{item.is_comment==true? 'zan-c-blue fa-comments':'zan-c-gray-darker fa-comments-o'}}" catchtap="toMessage" data-messageId="{{item.id}}" data-focus="true">
+              {{item.comment_count}}
+            </view>
+            <view class="icons-bar zan-col zan-col-6 fa fa-retweet {{item.is_quoted==true? 'zan-c-green':'zan-c-gray-darker'}}" catchtap="retweetButton" data-message="{{item}}" data-listname="{{listName}}" data-idx="{{index}}">
+              {{item.quote_count}}
+            </view>
+            <view class="icons-bar zan-col zan-col-6 zan-c-gray-darker fa fa-envelope-o">
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+</template>

@@ -1,0 +1,54 @@
+/* pages/users/users.wxss */
+
+.profile-img-panel {
+  height: 7rem;
+  width: 100%;
+  background-color: gainsboro;
+}
+
+.profile-img {
+  height: 7rem;
+  width: 100%;
+}
+
+.profile-panel {
+  position: relative;
+  padding: 0.5rem;
+}
+
+.avatar-profile {
+  margin-top: -2.5rem;
+  width: 4rem;
+  height: 4rem;
+  border-radius: 50%;
+  border: 6px solid white;
+}
+
+.zan-btn {
+  font-size: 0.7rem;
+}
+
+.intro {
+  padding: 0.5rem;
+  line-height: 200%;
+}
+
+.swiper-tab {
+  width: 100%;
+  background-color: white;
+  border-bottom: 1px solid rgba(100, 100, 100, 0.2);
+  text-align: center;
+  line-height: 80rpx;
+}
+
+.swiper-tab-list {
+  font-size: 30rpx;
+  display: inline-block;
+  width: 25%;
+  color: rgba(100, 100, 100, 0.4);
+}
+
+.on {
+  color: #dd6f8c;
+  border-bottom: 5rpx solid #dd6f8c;
+}

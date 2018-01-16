@@ -4,11 +4,13 @@ const app = getApp()
 
 Page({
   data: {
+    isHideLoadMore: true,
     focus: false,
     retweetCheck: false,
     originHidden: true,
     imgList: [],
     imgLength: 0,
+    origin: {},
     message: {},
     replies: [],
     replyTo: {},
@@ -26,6 +28,11 @@ Page({
         focus: option.focus,
         retweetCheck: option.retweetCheck,
       })
+      if (res.data.quoted){
+        that.setData({
+          origin: res.data.quoted
+        })
+      }
       app.loadReplies(option.messageid, 0).then(res => {
         var that = this
         console.log(res.data.replies)
@@ -33,6 +40,48 @@ Page({
           replies: res.data.replies,
         })
       })
+    })
+  },
+
+  onPullDownRefresh: function () { //下拉刷新信息
+    wx.showNavigationBarLoading()
+    app.loadReplies(this.data.messageid, 0).then(res => {
+      var that = this
+      console.log(res.data.replies)
+      that.setData({
+        replies: res.data.replies,
+      })
+      wx.stopPullDownRefresh()
+      wx.hideNavigationBarLoading()
+      wx.showToast({
+        title: '评论刷新完毕',
+        icon: 'success',
+        duration: 800
+      })
+    })
+  },
+
+  onReachBottom: function () { //浏览到底部自动更新信息
+    var that = this
+    that.setData({
+      isHideLoadMore: false
+    })
+    var messageId = that.data.message.id
+    var offset = that.data.replies.length
+    app.loadReplies(messageId, offset).then(res => {
+      var get_list = res.data.replies
+      var old_list = that.data.replies
+      var replies = old_list.concat(get_list)
+      that.setData({
+        replies: replies,
+        isHideLoadMore: true
+      })
+      if (get_list.length == 0) {
+        wx.showToast({
+          title: '已经到底了',
+          duration: 800
+        })
+      }
     })
   },
 
@@ -61,6 +110,19 @@ Page({
         duration: 1000
       })
     }
+  },
+
+  popImg: function (event) { // 用户点击图片右上角的叉，取消图片
+    var that = this
+    var idx = event.currentTarget.dataset.index
+    var imgList = that.data.imgList
+    imgList.splice(idx, 1)
+    var uploadHidden = imgList.length == 0
+    that.setData({
+      imgList: imgList,
+      imgLength: imgList.length,
+      uploadHidden: uploadHidden
+    })
   },
 
   getFocus: function (event) { // 回复推文或回复别的回复时，自动获得文本聚焦
@@ -115,41 +177,39 @@ Page({
       })
       if (ifRetweet) { //如果勾选了转发
         app.retweetMessage(replyId, comment).then(res => {
+          var rMessageId = res.data.messageId
+          var tempFilePaths = that.data.imgList
+          app.upLoadImg(tempFilePaths, rMessageId)
           wx.showToast({
             title: '评论&转发成功',
             icon: 'success',
             duration: 800
           })
-          app.loadReplies(messageId, 0).then(res => {
-            that.setData({
-              replies: res.data.replies,
-              toolsHidden: true,
-              replyValue: '',
-              textValue: '',
-              focus: false,
-              retweetCheck: false,
-            })
-          })
         })
       } else { //不勾选转发
         app.messageReply(replyId, comment).then(res => {
+          var rMessageId = res.data.messageId
+          var tempFilePaths = that.data.imgList
+          app.upLoadImg(tempFilePaths, rMessageId)
           wx.showToast({
             title: '评论成功',
             icon: 'success',
             duration: 800
           })
-          app.loadReplies(messageId, 0).then(res => {
-            that.setData({
-              replies: res.data.replies,
-              toolsHidden: true,
-              replyValue: '',
-              focus: false,
-              retweetCheck: false,
-              textValue: ''
-            })
-          })
         })
       }
+      app.loadReplies(messageId, 0).then(res => {
+        that.setData({
+          replies: res.data.replies,
+          toolsHidden: true,
+          replyValue: '',
+          focus: false,
+          retweetCheck: false,
+          textValue: '',
+          uploadHidden: true,
+          imgList: []
+        })
+      })
     } else {
       wx.showToast({
         title: '评论不可为空',
@@ -163,6 +223,15 @@ Page({
     var that = this
     var messageId = event.currentTarget.dataset.messageid
     var url = '../message_detail/message_detail?messageid=' + messageId
+    wx.navigateTo({
+      url: url,
+    })
+  },
+
+  toUser: function (event) { // 访问用户页面
+    var that = this
+    var userId = event.currentTarget.dataset.userid
+    var url = '../users/users?userid=' + userId
     wx.navigateTo({
       url: url,
     })

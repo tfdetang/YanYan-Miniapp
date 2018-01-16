@@ -1,0 +1,85 @@
+<!--pages/users/users.wxml-->
+<import src="../../templates/card.wxml" />
+
+<view class="profile-img-panel">
+  <block wx:if="{{user.profile_img}}">
+    <image src="{{user.profile_img}}" class="profile-img" mode="aspectFill"></image>
+  </block>
+</view>
+<!--用户信息面板-->
+<view class="zan-row profile-panel">
+  <view class="zan-col zan-col-8">
+    <image class="avatar-profile" src="{{user.avatar}}"></image>
+    <view class="zan-font-bold">{{user.nickname}}</view>
+    <view class="zan-font-16 zan-c-gray-dark">{{'@' + user.nickname}}</view>
+  </view>
+  <view class="zan-col zan-col-4 zan-col-offset-6">
+    <text class="zan-c-blue fa fa-lg fa-envelope-o"></text>
+  </view>
+  <view class="zan-col zan-col-6">
+    <button class="zan-btn zan-btn--small {{user.is_following==true ? '' : 'zan-btn--plain'}} zan-btn--primary">{{user.is_following==true ? '正在关注' : '+关注'}}</button>
+  </view>
+</view>
+<view class="intro zan-font-16">
+  <text decode="true">{{user.intro}}</text>
+</view>
+<view class="intro zan-row zan-c-gray-darker zan-font-14">
+  <text class="fa fa-map-marker zan-col zan-col-12"> {{user.country + ', '}}{{user.city}}</text>
+  <text class="zan-col zan-col-12 fa fa-weixin" decode="true">&nbsp;{{user.weixin_id==''? '未公开':user.weixin_id}}</text>
+  <view class="zan-col zan-col-8">
+    <text class="zan-c-black zan-font-bold" decode="true">{{user.followers}}&nbsp;</text>
+    <text>关注者</text>
+  </view>
+  <view class="zan-col zan-col-8">
+    <text>关注了</text>
+    <text class="zan-c-black zan-font-bold" decode="true">&nbsp;{{user.followed_users}}</text>
+  </view>
+</view>
+
+<!--用户动态面板-->
+
+<view class="swiper-tab">
+  <view class="swiper-tab-list {{currentTab==0 ? 'on' : ''}}" data-current="0" bindtap="swichNav">推文</view>
+  <view class="swiper-tab-list {{currentTab==1 ? 'on' : ''}}" data-current="1" bindtap="swichNav">转发与评论</view>
+  <view class="swiper-tab-list {{currentTab==2 ? 'on' : ''}}" data-current="2" bindtap="swichNav">喜欢</view>
+  <view class="swiper-tab-list {{currentTab==3 ? 'on' : ''}}" data-current="3" bindtap="swichNav">照片</view>
+</view>
+
+<view style="background-color:#f9f9f9">
+  <swiper current="{{currentTab}}" class="swiper-box" duration="300" bindchange="bindChange" style="height:{{winHeight-44}}px">
+    <!-- 推文 -->
+    <swiper-item>
+      <scroll-view scroll-y="{{scrollY}}" style="height:100%" bindscrolltolower="toBottom">
+        <template is="messageCard" data="{{ message_list:postList,listName:'postList'}}" />
+        <view class="weui-loadmore" hidden="{{isHideLoadMore}}">
+          <view class="weui-loading"></view>
+          <view class="weui-loadmore__tips">正在加载</view>
+        </view>
+      </scroll-view>
+    </swiper-item>
+    <!-- 转发与评论 -->
+    <swiper-item>
+      <scroll-view scroll-y="{{scrollY}}" style="height:100%" bindscrolltolower="toBottom">
+        <template is="messageCard" data="{{ message_list:commentList,listName:'commentList'}}" />
+        <view class="weui-loadmore" hidden="{{isHideLoadMore}}">
+          <view class="weui-loading"></view>
+          <view class="weui-loadmore__tips">正在加载</view>
+        </view>
+      </scroll-view>
+    </swiper-item>
+    <!-- 喜爱 -->
+    <swiper-item>
+      <scroll-view scroll-y="{{scrollY}}" style="height:100%" bindscrolltolower="toBottom">
+        <template is="messageCard" data="{{ message_list:likeList,listName:'likeList'}}" />
+        <view class="weui-loadmore" hidden="{{isHideLoadMore}}">
+          <view class="weui-loading"></view>
+          <view class="weui-loadmore__tips">正在加载</view>
+        </view>
+      </scroll-view>
+    </swiper-item>
+    <!-- 照片 -->
+    <swiper-item>
+      <view>照片</view>
+    </swiper-item>
+  </swiper>
+</view>

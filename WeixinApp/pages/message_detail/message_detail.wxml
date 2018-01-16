@@ -1,52 +1,48 @@
+<import src="../../templates/card.wxml" />
+
 <view class="container">
   <!-- 显示回复的推文内容 -->
-  <view class="zan-panel" hidden="{{originHidden}}" catchtap="toMessage" data-messageId="{{message.quoted.id}}">
+  <view class="zan-panel" hidden="{{originHidden}}" catchtap="toMessage" data-messageId="{{origin.id}}">
     <view class="zan-row detail-panel">
       <view class="zan-col zan-col-4">
-        <image class="avatar" src="{{message.quoted.avatar}}"></image>
+        <image class="avatar" src="{{origin.avatar}}" catchtap="toUser" data-userid="{{origin.author_id}}"></image>
       </view>
       <view class="zan-col zan-col-20">
-        <text class="zan-font-16 zan-font-bold">{{message.quoted.nickname}}</text>
-        <text class="zan-font-16 zan-c-gray-dark zan-pull-right" decode="true"> &nbsp; {{message.quoted.time_update}}</text>
-        <view class="zan-font-16 zan-c-gray-dark">@{{message.quoted.username}}</view>
+        <text class="zan-font-16 zan-font-bold" catchtap="toUser" data-userid="{{origin.author_id}}">{{origin.nickname}}</text>
+        <text class="zan-font-16 zan-c-gray-dark zan-pull-right" decode="true"> &nbsp; {{origin.time_update}}</text>
+        <view class="zan-font-16 zan-c-gray-dark" catchtap="toUser" data-userid="{{origin.author_id}}">{{'@' + origin.username}}</view>
       </view>
     </view>
     <view style="padding: 1rem;">
-      <view class="zan-font-18 detail-body">{{message.quoted.body}}</view>
+      <view class="zan-font-18 detail-body">{{origin.body}}</view>
       <!-- 图片显示控件 -->
       <view class="zan-row">
-        <block wx:for="{{message.quoted.images}}" wx:for-item="quotedimg">
-          <image wx:if="{{message.quoted.images.length==1}}" class="detail-single-image zan-col zan-col-23" mode="aspectFit" src="{{quotedimg}}" catchtap="previewImage" data-current="{{quotedimg}}" data-all="{{message.quoted.images}}"></image>
-          <image wx:else class="zan-col zan-col-11 detail-list-images" mode="aspectFill" src="{{quotedimg}}" catchtap="previewImage" data-current="{{quotedimg}}" data-all="{{message.quoted.images}}"></image>
-        </block>
+        <template is="imgPlacehoder" data="{{ ...origin }}" />
       </view>
     </view>
   </view>
   <view class="reply-line zan-panel-title" wx:if="{{message.quoted && message.type==1}}">
     回复了
-    <text class="zan-c-gray-darker" decode="true">{{message.quoted.nickname}} &nbsp;</text>
+    <text class="zan-c-gray-darker" decode="true">{{origin.nickname}} &nbsp;</text>
     <view class="zan-tag zan-c-gray-darker" hidden="{{!originHidden}}" catchtap="showOrigin">显示原推文</view>
   </view>
   <!-- 显示推文内容 -->
   <view class="zan-panel">
     <view class="zan-row detail-panel">
       <view class="zan-col zan-col-4">
-        <image class="avatar" src="{{message.avatar}}"></image>
+        <image class="avatar" src="{{message.avatar}}" catchtap="toUser" data-userid="{{message.author_id}}"></image>
       </view>
       <view class="zan-col zan-col-20">
-        <text class="zan-font-16 zan-font-bold">{{message.nickname}}</text>
+        <text class="zan-font-16 zan-font-bold" catchtap="toUser" data-userid="{{message.author_id}}">{{message.nickname}}</text>
         <text class="zan-font-16 zan-c-gray-dark zan-pull-right" decode="true"> &nbsp; {{message.time_update}}</text>
-        <view class="zan-font-16 zan-c-gray-dark">@{{message.username}}</view>
+        <view class="zan-font-16 zan-c-gray-dark" catchtap="toUser" data-userid="{{message.author_id}}">@{{message.username}}</view>
       </view>
     </view>
     <view style="padding: 1rem;">
       <view class="zan-font-18 detail-body">{{message.body}}</view>
       <!-- 图片显示控件 -->
       <view class="zan-row">
-        <block wx:for="{{message.images}}" wx:for-item="images">
-          <image wx:if="{{message.images.length==1}}" class="detail-single-image zan-col zan-col-23" mode="aspectFit" src="{{images}}" catchtap="previewImage" data-current="{{images}}" data-all="{{message.images}}"></image>
-          <image wx:else class="zan-col zan-col-11 detail-list-images" mode="aspectFill" src="{{images}}" catchtap="previewImage" data-current="{{images}}" data-all="{{message.images}}"></image>
-        </block>
+        <template is="imgPlacehoder" data="{{ ...message }}" />
       </view>
       <!-- 显示引用的消息 -->
       <block wx:if="{{message.quoted && message.type==2}}">
@@ -56,14 +52,14 @@
               <image class="single-image quote-iamge" mode="aspectFill" src="{{message.quoted.images[0]}}"></image>
             </view>
             <view class="zan-col zan-col-15 quote-inner">
-              <view class="zan-font-12  zan-c-gray-dark">@{{message.quoted.username}}</view>
-              <view class="zan-font-12 quote-body zan-c-gray-darker">{{message.quoted.body}}</view>
+              <view class="zan-font-14  zan-c-gray-dark">@{{message.quoted.username}}</view>
+              <view class="zan-font-14 quote-body zan-c-gray-darker">{{message.quoted.body}}</view>
             </view>
           </block>
           <block wx:else>
             <view class="zan-col zan-col-22 quote-inner">
-              <view class="zan-font-12  zan-c-gray-dark">@{{message.quoted.username}}</view>
-              <view class="zan-font-12 quote-body zan-c-gray-darker">{{message.quoted.body}}</view>
+              <view class="zan-font-14  zan-c-gray-dark">@{{message.quoted.username}}</view>
+              <view class="zan-font-14 quote-body zan-c-gray-darker">{{message.quoted.body}}</view>
             </view>
           </block>
           <view class="zan-row">
@@ -95,17 +91,11 @@
   <view class="zan-row icons-bar-detail">
     <view class="zan-col zan-col-4">
       <text decode="true">&nbsp;</text> </view>
-    <view wx:if="{{message.is_favoed}}" class="icons-bar-big zan-col zan-col-5 zan-c-red fa fa-heart" catchtap="favoMessage">
+    <view class="icons-bar-big zan-col zan-col-5 fa {{message.is_favoed==true? 'zan-c-red fa-heart':'zan-c-gray-darker fa-heart-o'}}" catchtap="favoMessage">
     </view>
-    <view wx:else class="icons-bar-big zan-col zan-col-5 zan-c-gray-darker fa fa-heart-o" catchtap="favoMessage">
+    <view class="icons-bar-big zan-col zan-col-5 fa {{message.is_comment==true? 'zan-c-blue fa-comments':'zan-c-gray-darker fa-comments-o'}}" catchtap="getFocus" data-message="{{message}}">
     </view>
-    <view wx:if="{{message.is_comment}}" class="icons-bar-big zan-col zan-col-5 zan-c-blue fa fa-comments-o" catchtap="getFocus" data-message="{{message}}">
-    </view>
-    <view wx:else class="icons-bar-big zan-col zan-col-5 zan-c-gray-darker fa fa-comments-o" catchtap="getFocus" data-message="{{message}}">
-    </view>
-    <view wx:if="{{message.is_quoted}}" class="icons-bar-big zan-col zan-col-5 zan-c-green fa fa-retweet" catchtap="retweetButton">
-    </view>
-    <view wx:else class="icons-bar-big zan-col zan-col-5 zan-c-gray-darker fa fa-retweet" catchtap="retweetButton">
+    <view class="icons-bar-big zan-col zan-col-5 fa fa-retweet {{message.is_quoted==true? 'zan-c-green':'zan-c-gray-darker'}}" catchtap="retweetButton">
     </view>
     <view class="icons-bar-big zan-col zan-col-5 zan-c-gray-darker fa fa-envelope-o">
     </view>
@@ -118,33 +108,36 @@
     <view class="reply-card" wx:for="{{replies}}" wx:for-item="reply" catchtap="toMessage" data-messageId="{{reply.id}}">
       <view style="padding:0.5rem" class="zan-row">
         <view class="zan-col zan-col-3">
-          <image class="avatar-reply" src="{{reply.avatar}}"></image>
+          <image class="avatar-reply" src="{{reply.avatar}}" catchtap="toUser" data-userid="{{reply.author_id}}"></image>
         </view>
         <view class="zan-col zan-col-20">
-          <text class="zan-font-14 zan-font-bold zan-c-gray-darker"> {{reply.nickname}} </text>
+          <text class="zan-font-14 zan-font-bold zan-c-gray-darker" catchtap="toUser" data-userid="{{reply.author_id}}"> {{reply.nickname}} </text>
           <text wx:if="{{reply.type == 2}}" class="zan-c-blue fa fa-retweet"></text>
           <text class="zan-font-12 zan-c-gray-dark zan-pull-right" decode="true"> &nbsp; {{reply.time_update}}</text>
           <view class="zan-font-14 detail-body">{{reply.body}}</view>
+          <!-- 显示回复的图片-->
+          <view class="zan-row">
+            <template is="imgPlacehoder" data="{{ ...reply }}" />
+          </view>
+          <!-- 显示回复的回复-->
           <view class="zan-font-12 zan-c-gray-dark zan-row reply" wx:for="{{reply.reply}}" wx:for-item="reply_">
             {{reply_.nickname}}: {{reply_.body}}
           </view>
           <view class="zan-row" style="padding-top:0.4rem">
-            <view wx:if="{{reply.is_comment}}" class="icons-bar zan-col zan-col-4 zan-col-offset-17 zan-c-gray-dark fa fa-comments-o" catchtap="getFocus" data-message="{{reply}}">
+            <view class="icons-bar zan-col zan-col-4 zan-col-offset-17 fa {{reply.is_comment==true? 'zan-c-gray-dark fa-comments':'zan-c-gray fa-comments-o'}}" catchtap="getFocus" data-message="{{reply}}">
               {{reply.comment_count}}
             </view>
-            <view wx:else class="icons-bar zan-col zan-col-4 zan-col-offset-17 zan-c-gray fa fa-comments-o" catchtap="getFocus" data-message="{{reply}}">
-              {{reply.comment_count}}
-            </view>
-            <view wx:if="{{reply.is_favoed}}" class="icons-bar zan-col zan-col-3 zan-c-gray-dark fa fa-heart" catchtap="favoButton" data-message="{{reply}}" data-idx="{{index}}">
-              {{reply.favo_count}}
-            </view>
-            <view wx:else class="icons-bar zan-col zan-col-3 zan-c-gray fa fa-heart-o" catchtap="favoButton" data-message="{{reply}}" data-idx="{{index}}">
+            <view class="icons-bar zan-col zan-col-3 fa {{reply.is_favoed==true? 'zan-c-gray-dark fa-heart':'zan-c-gray fa-heart-o'}}" catchtap="favoButton" data-message="{{reply}}" data-idx="{{index}}">
               {{reply.favo_count}}
             </view>
           </view>
         </view>
       </view>
     </view>
+  </view>
+  <view class="weui-loadmore" hidden="{{isHideLoadMore}}">
+    <view class="weui-loading"></view>
+    <view class="weui-loadmore__tips">正在加载</view>
   </view>
   <!-- 回复框 -->
   <view class="reply-input" style="padding:0.5rem">

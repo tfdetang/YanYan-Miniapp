@@ -71,6 +71,7 @@
 }
 
 .single-image {
+  max-height: 10rem;
   border-radius: 0.3rem;
   width: 100%;
 }
@@ -93,6 +94,7 @@
 }
 
 .quote-inner {
+  min-height: 4rem;
   padding-top: 0.3rem;
   padding-right: 0.8rem;
   padding-left: 1rem;
@@ -108,6 +110,12 @@
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
   line-height: 130%;
+}
+
+.quote-arrow {
+  position: relative;
+  margin-top: 2.2rem;
+  font-size: 3rem;
 }
 
 /*  加载更多   */
@@ -135,10 +143,4 @@
 .weui-loadmore__tips {
   display: inline-block;
   vertical-align: middle;
-}
-
-.quote-arrow {
-  margin-right: 1rem;
-  margin-top: 0.3rem;
-  font-size: 3rem;
 }

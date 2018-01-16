@@ -232,8 +232,7 @@ class User(Base, Utils, db.Model, UserMixin):
                 (Event.type == 5) & (Event.sponsor != self.id)) | ((Event.type == 7) & (Event.sponsor != self.id)))
 
     def self_event(self):
-        return db.session.query(Event).filter(Event.sponsor == self.id).filter(
-            (Event.type == 1) | (Event.type == 2) | (Event.type == 3) | (Event.type == 4) | (Event.type == 5))
+        return db.session.query(Event).filter(Event.sponsor == self.id)
 
     def self_photos(self):
         return db.session.query(Image).filter(Image.uploader == self.id)
@@ -471,8 +470,8 @@ class Extra_user_profile(Base, db.Model, Utils):
     id = Column(Integer, primary_key=True, autoincrement=True)
     user_id = Column(ForeignKey('user.id'))
     intro = Column(String(260))
-    profile_img = Column(String(20))
-    weixin_id = Column(String(20))
+    profile_img = Column(String(50))
+    weixin_id = Column(String(50))
     privacy = Column(Integer)  # 0: 公开微信号 1：关注我的人  2：互相关注  3：不公开
 
     def __repr__(self):

@@ -49,6 +49,16 @@ App({
     return util.getRequest(url, data)
   },
 
+  getUser: function (userId) { // 抓取别的用户的信息
+    var that = this
+    var url = config.getHostUrl() + 'user/info/'
+    var data = {
+      login_key: wx.getStorageSync('userKey').login_key,
+      userid: userId
+    }
+    return util.getRequest(url, data)
+  },
+
   globalData: {
     userInfo: null
   },
@@ -60,6 +70,17 @@ App({
       login_key: wx.getStorageSync('userKey').login_key,
       start: start,
       direction: direction
+    }
+    return util.getRequest(url, data)
+  },
+
+  loadUserEvent: function (start, userId, eventType){
+    var that = this
+    var url = config.getHostUrl() + 'events/' + userId + '/'
+    var data = {
+      login_key: wx.getStorageSync('userKey').login_key,
+      start: start,
+      event_type: eventType
     }
     return util.getRequest(url, data)
   },

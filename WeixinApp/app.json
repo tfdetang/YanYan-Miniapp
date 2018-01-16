@@ -3,7 +3,8 @@
     "pages/index/index",
     "pages/logs/logs",
     "pages/message_detail/message_detail",
-    "pages/editor/editor"
+    "pages/editor/editor",
+    "pages/users/users"
   ],
   "window": {
     "backgroundTextStyle": "light",

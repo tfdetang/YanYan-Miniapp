@@ -15,12 +15,10 @@ from FlaskApp.utils.error_code import error_code
 import json
 from functools import wraps
 
-
 # ===========================================接口初始化==========================================
 
 weixinapi = WXAPPAPI(appid=app.config['WEIXIN_APPID'],
-                app_secret=app.config['WEIXIN_SECRET'])
-
+                     app_secret=app.config['WEIXIN_SECRET'])
 
 lm = LoginManager()
 lm.init_app(app)
@@ -48,9 +46,11 @@ def login_required(func):
     @wraps(func)
     def decorated_view(*args, **kwargs):
         if not current_user.is_authenticated:
-            return jsonify({'errMsg':error_code['4001'],'errCode':'4001'})
+            return jsonify({'errMsg': error_code['4001'], 'errCode': '4001'})
         return func(*args, **kwargs)
+
     return decorated_view
+
 
 @app.before_request
 def before_request():
@@ -73,23 +73,20 @@ def login_wechat():
     except:
         user = new_user_register(openid, json.loads(userinfo))
     login_key = user.generate_login_key()
-    return jsonify({'userid':user.id,
-                    'login_key':login_key.secret})
+    return jsonify({'userid': user.id,
+                    'login_key': login_key.secret})
 
 
 # --------------------------------------------用户相关接口----------------------------------------
 
-@app.route('/user/self/', methods=['GET'])
-@login_required
-def current_user_info():
-    user = g.user
+def user_2_dict(user):
     user_info = dict(nickname=user.nickname,
                      username=user.username,
                      city=user.city,
                      province=user.province,
                      country=user.country,
                      intro=user.get_profile().intro,
-                     profile_img=user.get_profile().profile_img,
+                     profile_img="{}/{}".format(app.config['BASE_URL'], user.get_profile().profile_img),
                      weixin_id=user.get_profile().weixin_id,
                      user_id=user.id,
                      followers=user.followers.count(),
@@ -97,6 +94,27 @@ def current_user_info():
                      avatar="{}/avatar_{}".format(app.config['BASE_URL'], user.id))
     user_info['errMsg'] = error_code['4000']
     user_info['errCode'] = '4000'
+    return user_info
+
+
+@app.route('/user/self/', methods=['GET'])
+@login_required
+def current_user_info():
+    user = g.user
+    user_info = user_2_dict(user)
+    return jsonify(user_info)
+
+
+@app.route('/user/info/', methods=['GET'])
+@login_required
+def get_user_info():
+    userid = request.args.get('userid')
+    try:
+        user = load_user_by_id(int(userid))
+    except:
+        return jsonify({'error': 'wrong_user_id'})
+    user_info = user_2_dict(user)
+    user_info['is_following'] = user.is_following(userid)
     return jsonify(user_info)
 
 
@@ -124,7 +142,7 @@ def message_2_dict(i):
                    is_favoed=g.user.is_favoed_message(i.id),
                    is_quoted=g.user.is_quoted_message(i.id),
                    is_comment=g.user.is_commented_message(i.id),
-                   avatar = app.config['BASE_URL']+'/avatar_'+str(i.author_id))
+                   avatar=app.config['BASE_URL'] + '/avatar_' + str(i.author_id))
 
     if i.images.count() > 0:
         for j in i.images:
@@ -159,6 +177,7 @@ def events_2_dict(events):
                 except:
                     pass
                 message['sponsor_id'] = i.sponsor
+                message['associate_id'] = i.associate_user
                 message['time'] = tools.timestamp_2_zh(i.time)
                 message['event_id'] = i.id
                 message_list.append(message)
@@ -181,7 +200,7 @@ def photo_2_dict(photos):
         for i in photos:
             photodict = dict(uploader=i.uploader,
                              uploade_time=tools.timestamp_2_str(i.uploade_time),
-                             url=app.config['BASE_URL']+'/'+i.url,
+                             url=app.config['BASE_URL'] + '/' + i.url,
                              relate_message=i.relate_message)
             relate_message = db.session.query(Message).filter(Message.id == i.relate_message).one()
             photodict['caption'] = relate_message.body
@@ -217,7 +236,7 @@ def get_replies(id):
             replies_2_list.append(reply_2_reply)
         reply['reply'] = replies_2_list
         replies_list.append(reply)
-    return jsonify({'count':reply_count,'replies':replies_list})
+    return jsonify({'count': reply_count, 'replies': replies_list})
 
 
 @app.route('/events/', methods=['GET'])
@@ -239,16 +258,39 @@ def get_events():
                   message_list=message_list)
     return jsonify(result)
 
+
+@app.route('/events/<userid>/', methods=['GET'])
+@login_required
+def get_events_byid(userid):
+    limit = 10
+    start = request.args.get('start', '0')
+    type = request.args.get('event_type', 'post')
+    user = load_user_by_id(int(userid))
+    if type == 'post':
+        query = user.self_event().filter(Event.type == 1)
+    elif type == 'comment':
+        query = user.self_event().filter((Event.type == 2) | (Event.type == 3) | (Event.type == 4))
+    else:
+        query = user.self_event().filter((Event.type == 5))
+
+    query = query.order_by(Event.id.desc())
+    events = query.offset(int(start)).limit(limit).all()
+    message_list = events_2_dict(events)
+    result = dict(num=len(message_list),
+                  message_list=message_list)
+    return jsonify(result)
+
+
 # ---------------------------------------推文操作相关接口-----------------------------
 
 
 @app.route('/qiniu/uptoken', methods=['GET'])
 def generate_upload_token():
     token = tools.qiniu_token()
-    return jsonify({'uptoken':token})
+    return jsonify({'uptoken': token})
 
 
-@app.route('/message/favo/', methods=['GET','POST'])
+@app.route('/message/favo/', methods=['GET', 'POST'])
 @login_required
 def favo_message():
     message_id = request.args.get('message_id', '0')
@@ -263,7 +305,7 @@ def favo_message():
         g.user.favo_message(message_id)
         favo = 1
     favo_count = message.favo_users.count()
-    return jsonify({'favo':favo,'count':str(favo_count)})
+    return jsonify({'favo': favo, 'count': str(favo_count)})
 
 
 @app.route('/message/reply/', methods=['POST'])
@@ -275,8 +317,8 @@ def reply_message():
         message = db.session.query(Message).filter(Message.id == int(message_id)).one()
     except:
         return jsonify({'error': 'wrong_message_id'})
-    g.user.comment_message(comment, int(message_id))
-    return jsonify({'status': 'success'})
+    reply = g.user.comment_message(comment, int(message_id))
+    return jsonify({'status': 'success', 'messageId': reply.id})
 
 
 @app.route('/message/retweet/', methods=['POST'])
@@ -288,8 +330,8 @@ def retweet_message():
         message = db.session.query(Message).filter(Message.id == int(message_id)).one()
     except:
         return jsonify({'error': 'wrong_message_id'})
-    g.user.quote_message(body=body, quoted_id=message_id)
-    return jsonify({'status': 'success', 'quotecount':message.quote_count})
+    event = g.user.quote_message(body=body, quoted_id=message_id)
+    return jsonify({'status': 'success', 'quotecount': message.quote_count, 'messageId': event.associate_message})
 
 
 @app.route('/message/', methods=['POST'])
@@ -297,7 +339,7 @@ def retweet_message():
 def post_message():
     body = request.form.get('body', ' ')
     message = g.user.create_message(body)
-    return jsonify({'status':'success','messageId':message.id})
+    return jsonify({'status': 'success', 'messageId': message.id})
 
 
 @app.route('/message/uploadimg/', methods=['POST'])
@@ -311,6 +353,6 @@ def add_img():
         return jsonify({'error': 'wrong_message_id'})
     if message.author_id == g.user.id:
         message.add_images(url)
-        return jsonify({'status':'success', 'messageId':message.id})
+        return jsonify({'status': 'success', 'messageId': message.id})
     else:
         return jsonify({'error': 'no_permission'})

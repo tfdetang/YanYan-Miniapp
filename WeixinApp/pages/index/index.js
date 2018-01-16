@@ -84,6 +84,15 @@ Page({
     })
   },
 
+  toUser: function (event) { // 访问用户页面
+    var that = this
+    var userId = event.currentTarget.dataset.userid
+    var url = '../users/users?userid=' + userId
+    wx.navigateTo({
+      url: url,
+    })
+  },
+
   toEditor: function (event) { // 跳转到发推文的页面
     var that = this
     var url = '../editor/editor'
@@ -95,14 +104,16 @@ Page({
   favoButton: function (event) { //点击喜爱
     wx.showToast({
       icon: 'loading',
+      title: '操作中',
       mask: true,
       duration: 1000
     })
     var that = this
+    var listName = event.currentTarget.dataset.listname
     var index = event.currentTarget.dataset.idx
     var messageId = event.currentTarget.dataset.message.id
-    var favoCount = "message_list[" + index + "].favo_count"
-    var isFavoed = "message_list[" + index + "].is_favoed"
+    var favoCount = listName + "[" + index + "].favo_count"
+    var isFavoed = listName+ "[" + index + "].is_favoed"
     app.favoMessage(messageId).then(res => {
       var params = {}
       params[favoCount] = res.data.count
@@ -113,11 +124,12 @@ Page({
 
   retweetButton: function (event) { //点击转发
     var that = this
+    var listName = event.currentTarget.dataset.listname
     var index = event.currentTarget.dataset.idx
     var messageId = event.currentTarget.dataset.message.id
     var url = '../message_detail/message_detail?messageid=' + messageId + '&focus=true'
-    var quoteCount = "message_list[" + index + "].quote_count"
-    var isQuoted = "message_list[" + index + "].is_quoted"
+    var quoteCount = listName + "[" + index + "].quote_count"
+    var isQuoted = listName + "[" + index + "].is_quoted"
     wx.showActionSheet({
       itemList: ['转发', '转发并回复'],
       success: function (res) {
