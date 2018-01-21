@@ -34,7 +34,6 @@ Page({
     }
     wx.showToast({
       icon: 'loading',
-      title: '加载中',
       mask: true,
       duration: 1500
     })
@@ -50,15 +49,35 @@ Page({
       that.setData({
         user: res.data
       })
-      wx.setNavigationBarTitle({
-        title: res.data.nickname
-      })
     })
     app.loadUserEvent(0, userId, 'post').then(res => {
       that.setData({
         postList: res.data.message_list,
       })
     })
+  },
+
+  onPullDownRefresh: function () { //下拉刷新信息
+    var that = this
+    that.setData({
+      postList: [],
+      commentList: [],
+      likeList: [],
+      imgList: [],
+      currentTab: 0
+    })
+    app.loadUserEvent(0, that.data.user.user_id, 'post').then(res => {
+      that.setData({
+        postList: res.data.message_list,
+      })
+      wx.stopPullDownRefresh()
+      wx.hideNavigationBarLoading()
+      wx.showToast({
+        title: '刷新完毕',
+        icon: 'success',
+        duration: 800
+      })
+    })    
   },
 
   onReachBottom: function () { // 滚动到底部时 才启用scroll-view
@@ -219,7 +238,6 @@ Page({
   },
 
   followButton: function (event) { //关注或取消关注
-    console.log(event)
     wx.showToast({
       icon: 'loading',
       mask: true,
@@ -308,16 +326,4 @@ Page({
       })
     }
   },
-
-  toChat: function (evnet) {
-    var that = this
-    var userid = that.data.user.user_id
-    var nickname = that.data.user.nickname
-    var username = that.data.user.username
-    var avatar = that.data.user.avatar
-    var url = '../chat/chat?userid=' + userid +'&nickname=' + nickname + '&username=' + username + '&avatar=' + avatar
-    wx.navigateTo({
-      url: url,
-    })
-  }
 })

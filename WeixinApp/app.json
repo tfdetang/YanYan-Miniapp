@@ -1,10 +1,14 @@
 {
   "pages": [
     "pages/index/index",
+    "pages/followed/index",
     "pages/logs/logs",
     "pages/message_detail/message_detail",
     "pages/editor/editor",
-    "pages/users/users"
+    "pages/users/users",
+    "pages/self/users",
+    "pages/notify/notify",
+    "pages/chat/chat"
   ],
   "window": {
     "backgroundTextStyle": "light",
@@ -17,11 +21,27 @@
     "list": [
       {
         "pagePath": "pages/index/index",
-        "text": "首页"
+        "iconPath": "icons/index.png",
+        "selectedIconPath": "icons/index-select.png",
+        "text": "主页"
       },
       {
-        "pagePath": "pages/logs/logs",
-        "text": "日志"
+        "pagePath": "pages/followed/index",
+        "iconPath": "icons/followed.png",
+        "selectedIconPath": "icons/followed-select.png",
+        "text": "关注"
+      },
+      {
+        "pagePath": "pages/notify/notify",
+        "iconPath": "icons/notify.png",
+        "selectedIconPath": "icons/notify-select.png",
+        "text": "消息"
+      },
+      {
+        "pagePath": "pages/self/users",
+        "iconPath": "icons/account.png",
+        "selectedIconPath": "icons/account-select.png",
+        "text": "我"
       }
     ]
   }

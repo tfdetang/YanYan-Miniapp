@@ -28,7 +28,7 @@ Page({
         focus: option.focus,
         retweetCheck: option.retweetCheck,
       })
-      if (res.data.quoted){
+      if (res.data.quoted) {
         that.setData({
           origin: res.data.quoted
         })
@@ -44,8 +44,9 @@ Page({
   },
 
   onPullDownRefresh: function () { //下拉刷新信息
+    var that = this
     wx.showNavigationBarLoading()
-    app.loadReplies(this.data.messageid, 0).then(res => {
+    app.loadReplies(that.data.message.id, 0).then(res => {
       var that = this
       console.log(res.data.replies)
       that.setData({
@@ -231,10 +232,13 @@ Page({
   toUser: function (event) { // 访问用户页面
     var that = this
     var userId = event.currentTarget.dataset.userid
-    var url = '../users/users?userid=' + userId
-    wx.navigateTo({
-      url: url,
-    })
+    var selfId = wx.getStorageSync('userinfo').user_id
+    if (userId != selfId) {
+      var url = '../users/users?userid=' + userId
+      wx.navigateTo({
+        url: url,
+      })
+    }
   },
 
   favoMessage: function (event) { //点击推文工具条上的喜爱

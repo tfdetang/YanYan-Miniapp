@@ -59,8 +59,13 @@ App({
     return util.getRequest(url, data)
   },
 
-  globalData: {
-    userInfo: null
+  followUser: function (userId) {
+    var that = this
+    var url = config.getHostUrl() + 'user/follow/' + userId + '/'
+    var data = {
+      login_key: wx.getStorageSync('userKey').login_key,
+    }
+    return util.postRequest(url, data)
   },
 
   loadEvents: function (start, direction) { // 抓取用户所关注的人的动态
@@ -76,11 +81,21 @@ App({
 
   loadUserEvent: function (start, userId, eventType){
     var that = this
-    var url = config.getHostUrl() + 'events/' + userId + '/'
+    var url = config.getHostUrl() + 'user/' + userId + '/events/'
     var data = {
       login_key: wx.getStorageSync('userKey').login_key,
       start: start,
       event_type: eventType
+    }
+    return util.getRequest(url, data)
+  },
+
+  loadUserPhoto: function (start, userId){
+    var that = this
+    var url = config.getHostUrl() + 'user/' + userId + '/images/'
+    var data = {
+      login_key: wx.getStorageSync('userKey').login_key,
+      start: start,
     }
     return util.getRequest(url, data)
   },
@@ -112,6 +127,55 @@ App({
       start: start
     }
     return util.getRequest(url, data)
+  },
+
+  loadNotifies: function (start) {
+    var that = this
+    var url = config.getHostUrl() + 'user/notifies/'
+    var data = {
+      login_key: wx.getStorageSync('userKey').login_key,
+      start: start
+    }
+    return util.getRequest(url, data)
+  },
+
+  loadChat: function (userId, start) {
+    var that = this
+    var url = config.getHostUrl() + 'user/chat/' + userId + '/'
+    var data = {
+      login_key: wx.getStorageSync('userKey').login_key,
+      start: start
+    }
+    return util.getRequest(url, data)
+  },
+
+  loadChatList: function () {
+    var that = this
+    var url = config.getHostUrl() + 'user/chat/'
+    var data = {
+      login_key: wx.getStorageSync('userKey').login_key,
+    }
+    return util.getRequest(url, data)
+  },
+
+  sendChat: function (userId, body) {
+    var that = this
+    var url = config.getHostUrl() + 'user/chat/' + userId + '/'
+    var data = {
+      login_key: wx.getStorageSync('userKey').login_key,
+      body: body
+    }
+    return util.postRequest(url, data)
+  },
+
+  readNotify: function (notifyId) {
+    var that = this
+    var url = config.getHostUrl() + 'user/notifies/read/'
+    var data = {
+      login_key: wx.getStorageSync('userKey').login_key,
+      notify_id: notifyId
+    }
+    return util.postRequest(url, data)
   },
 
   messageReply: function (messageId, comment) { // 回复某条推文

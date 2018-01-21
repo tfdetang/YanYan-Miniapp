@@ -5,7 +5,7 @@ except:
 
     sys.path.append('..')
     from FlaskApp import app, db
-from sqlalchemy import Column, String, Integer, Text, ForeignKey, Table
+from sqlalchemy import Column, String, Integer, Text, ForeignKey, Table, func
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.ext.declarative import declarative_base, DeclarativeMeta
 from flask_login import UserMixin
@@ -200,6 +200,11 @@ class User(Base, Utils, db.Model, UserMixin):
                           time=tools.generate_timestamp(),
                           type=7)
             event.save()
+            notify = Notify(user=user_id,
+                            event=event.id,
+                            type=7,
+                            read=0)
+            notify.save()
             return self
 
     def unfollow(self, user_id):
@@ -215,6 +220,11 @@ class User(Base, Utils, db.Model, UserMixin):
                           time=tools.generate_timestamp(),
                           type=8)
             event.save()
+            notify = Notify(user=user_id,
+                            event=event.id,
+                            type=8,
+                            read=0)
+            notify.save()
             return self
 
     def is_following(self, user_id):
@@ -237,7 +247,10 @@ class User(Base, Utils, db.Model, UserMixin):
     def self_photos(self):
         return db.session.query(Image).filter(Image.uploader == self.id)
 
-    def post_message(self, body):
+    def self_notifies(self):
+        return db.session.query(Notify).filter(Notify.user == self.id)
+
+    def post_message(self, body, type=0):
         channels = tools.match_channel(body + ' ')
         body = body[:260]
         time = tools.generate_timestamp()
@@ -245,7 +258,7 @@ class User(Base, Utils, db.Model, UserMixin):
                           time_create=time,
                           time_update=time,
                           author_id=self.id,
-                          type=0,
+                          type=type,
                           comment_count=0,
                           quote_count=0)
         message.save()
@@ -277,32 +290,44 @@ class User(Base, Utils, db.Model, UserMixin):
                       associate_user=commented_message.author_id,
                       type=3)
         event.save()
+        notify = Notify(user=commented_message.author_id,
+                        event=event.id,
+                        type=3,
+                        read=0)
+        notify.save()
         self.update()
         return message
 
     def quote_message(self, body, quoted_id):
         quoted_message = db.session.query(Message).filter(Message.id == quoted_id).one()
         quoted_message.quote_count += 1
+        type = 2
         self.quoted_messages.append(quoted_message)
         if body:
             self.commented_messages.append(quoted_message)  # 如果转发的时候带文字，则也算入评论中
             quoted_message.comment_count += 1
             message = self.post_message(body)
             message.quote_id = quoted_id
-            message.type = 2
+            message.type = type
             event = Event(sponsor=self.id,
                           associate_message=message.id,
                           time=tools.generate_timestamp(),
                           associate_user=quoted_message.author_id,
-                          type=2)
+                          type=type)
             message.update()
         else:
+            type = 4
             event = Event(sponsor=self.id,
                           associate_message=quoted_id,
                           time=tools.generate_timestamp(),
                           associate_user=quoted_message.author_id,
-                          type=4)
+                          type=type)
         event.save()
+        notify = Notify(user=quoted_message.author_id,
+                        event=event.id,
+                        type=type,
+                        read=0)
+        notify.save()
         quoted_message.update()
         self.update()
         return event
@@ -327,6 +352,11 @@ class User(Base, Utils, db.Model, UserMixin):
                           associate_user=message.author_id,
                           type=5)
             event.save()
+            notify = Notify(user=message.author_id,
+                            event=event.id,
+                            type=5,
+                            read=0)
+            notify.save()
             return self
 
     def unfavo_message(self, message_id):
@@ -335,6 +365,53 @@ class User(Base, Utils, db.Model, UserMixin):
             self.favo_messages.remove(message)
             self.update()
             return self
+
+    def send_private_message(self, body, send_id):
+        try:
+            user = db.session.query(User).filter(User.id == send_id).one()
+        except:
+            return False
+        message = self.post_message(body, 4)
+        event = Event(sponsor=self.id,
+                      associate_message=message.id,
+                      time=tools.generate_timestamp(),
+                      associate_user=send_id,
+                      type=6)
+        event.save()
+        notify = Notify(user=send_id,
+                        event=event.id,
+                        type=6,
+                        read=0)
+        notify.save()
+        return event
+
+    def get_chat_history(self, userid):
+        try:
+            user = db.session.query(User).filter(User.id == userid).one()
+        except:
+            return False
+        query = db.session.query(Event).filter(Event.type == 6).filter(
+            (Event.sponsor == self.id) | (Event.associate_user == self.id)).filter(
+            (Event.sponsor == userid) | (Event.associate_user == userid))
+        return query
+
+    def get_chat_list(self):
+        receive_list = db.session.query(Event.sponsor, func.max(Event.id)).filter(
+            (Event.type == 6) & (Event.associate_user == self.id)).group_by(Event.sponsor).order_by(
+            func.max(Event.id).desc()).all()
+        send_list = db.session.query(Event.associate_user, func.max(Event.id)).filter(
+            (Event.type == 6) & (Event.sponsor == self.id)).group_by(Event.associate_user).order_by(
+            func.max(Event.id).desc()).all()
+        chat = {}
+        for i in receive_list:
+            chat[str(i[0])] = i[1]
+
+        for j in send_list:
+            if chat[str(j[0])]:
+                chat[str(j[0])] = max(chat[str(j[0])],j[1])
+            else:
+                chat[str(j[0])] = j[1]
+        return chat
 
     def __repr__(self):
         return '<User %s>' % self.nickname
@@ -360,6 +437,8 @@ class Event(Base, db.Model, Utils):
     time = Column(String(45))
     type = Column(Integer)
     remarks = Column(String(45))
+    notifies = relationship('Notify',
+                            backref=backref('notified_event'))
 
     def get_sponsor(self):
         return db.session.query(User).filter(User.id == self.sponsor).one()
@@ -372,6 +451,31 @@ class Event(Base, db.Model, Utils):
 
     def __repr__(self):
         return '<Event %s>' % self.id
+
+
+class Notify(Base, db.Model, Utils):
+    '''
+    id: 通知流水号
+    user: 所通知用户的id
+    event: 所对应的事件
+    type: 事件的类型（同event）
+    read: 是否已读（0 未读，1 已读）
+    '''
+    __tablename__ = 'notify'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user = Column(ForeignKey('user.id'))
+    event = Column(ForeignKey('event.id'))
+    type = Column(Integer)
+    read = Column(Integer)
+
+    def read_notify(self):
+        self.read = 1
+        self.update()
+        return self
+
+    def __repr__(self):
+        return '<Notification %s>' % self.id
 
 
 class Channel(Base, db.Model, Utils):
@@ -415,7 +519,7 @@ class Message(Base, db.Model, Utils):
     quote_count = Column(Integer)
     author_id = Column(ForeignKey('user.id'))
     quote_id = Column(Integer)  # 引用Message的id
-    type = Column(Integer)  # Message的类型：0 普通Message, 1 回复Message, 2 回复&转发Message，3 转发Message
+    type = Column(Integer)  # Message的类型：0 普通Message, 1 回复Message, 2 回复&转发Message，3 转发Message, 4 私信Message
     channels = relationship('Channel',
                             secondary='channel_2_message',
                             backref='c_message',
@@ -512,26 +616,32 @@ if __name__ == '__main__':
     with app.app_context():
         user2 = db.session.query(User).filter(User.id == 2).one()
         user3 = db.session.query(User).filter(User.id == 3).one()
+        user4 = db.session.query(User).filter(User.id == 4).one()
         message5 = db.session.query(Message).filter(Message.id == 5).one()
         message7 = db.session.query(Message).filter(Message.id == 7).one()
         # events = user1.followed_event().offset(0).limit(10).all()
         # user1.set_profile()
         # user2.set_profile()
         # message7.add_images('msg_img_WrxKYo05sp')
-        #user3.create_message('测试一下下拉刷新功能！！')
+        # user4.create_message('大家好！我是测试用户4')
+        #user4.send_private_message('测试', 2)
 
-
+        #print(user2.get_chat_history(4).all())
         # user2.quote_message(body='', quoted_id=2)
-        # user3.quote_message(body='', quoted_id=7)
-        user2.comment_message('测试评论的显示，这是第一条评论', 13)
-        user3.comment_message('这是第二条评论', 13)
+        # user4.quote_message(body='多来测试一下消息提醒功能', quoted_id=7)
+        # user2.comment_message('测试评论的显示，这是第一条评论', 13)
+        # user3.comment_message('这是第二条评论', 13)
         # print(user2.is_quoted_message(2))
         # user3.create_message('2张图片显示。')
 
         # print(user1.self_event().order_by(Event.id.desc()).filter((Event.type == 2) | (Event.type == 3)).limit(10).all())
 
         # user2.favo_message(1)
-        #user3.follow(user2.id)
+        print(user2.get_chat_list().keys(), user2.get_chat_list().values())
+        #user4.follow(user2.id)
+        messages = db.session.query(Message.author_id, func.max(Message.id)).group_by(Message.author_id).order_by(
+            func.max(Message.id).desc())
+        #print(messages.all())
         # message = db.session.query(Message).filter(Message.id == 8).one()
         # print(message.favo_users.count())
         # user2.quote_message('我们来测试一下转发 是否能正常生效',1)

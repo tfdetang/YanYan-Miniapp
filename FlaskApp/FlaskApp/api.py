@@ -97,6 +97,49 @@ def user_2_dict(user):
     return user_info
 
 
+def notify_2_dict(notifies):
+    notify_type = {'2': '转发并评论到',
+                   '3': '评论到',
+                   '4': '转发了推文',
+                   '5': '喜欢了推文',
+                   '7': '关注了你',
+                   '9': '提及了你'}
+    notify_list = []
+    for i in notifies:
+        event = i.notified_event
+        sponsor = event.get_sponsor()
+        notify_dict = dict(nickname=sponsor.nickname,
+                           user_id=sponsor.id,
+                           time=tools.timestamp_2_zh(event.time),
+                           avatar="{}/avatar_{}".format(app.config['BASE_URL'], sponsor.id),
+                           operation=notify_type[str(event.type)],
+                           type=event.type,
+                           read=i.read,
+                           id=i.id)
+        if event.type != 7:
+            message = event.get_message()
+            notify_dict['body'] = message.body,
+            notify_dict['message_id'] = message.id,
+        notify_list.append(notify_dict)
+    return notify_list
+
+
+def chat_2_dict(events):
+    chats = []
+    for i in events:
+        message = i.get_message()
+        chat_dict = dict(sponsor=i.sponsor,
+                         associate=i.associate_user,
+                         time=tools.timestamp_2_zh(i.time),
+                         body=message.body,
+                         message_id=message.id,
+                         event_id=i.id)
+        chats.append(chat_dict)
+    return chats
+
+
+# ------------------------------用户信息-----------------------------------
+
 @app.route('/user/self/', methods=['GET'])
 @login_required
 def current_user_info():
@@ -114,8 +157,135 @@ def get_user_info():
     except:
         return jsonify({'error': 'wrong_user_id'})
     user_info = user_2_dict(user)
-    user_info['is_following'] = user.is_following(userid)
+    user_info['is_following'] = g.user.is_following(userid)
     return jsonify(user_info)
+
+
+@app.route('/user/<userid>/events/', methods=['GET'])
+@login_required
+def get_events_byid(userid):
+    limit = 10
+    start = request.args.get('start', '0')
+    type = request.args.get('event_type', 'post')
+    user = load_user_by_id(int(userid))
+    if type == 'post':
+        query = user.self_event().filter(Event.type == 1)
+    elif type == 'comment':
+        query = user.self_event().filter((Event.type == 2) | (Event.type == 3) | (Event.type == 4))
+    else:
+        query = user.self_event().filter((Event.type == 5))
+
+    query = query.order_by(Event.id.desc())
+    events = query.offset(int(start)).limit(limit).all()
+    message_list = events_2_dict(events)
+    result = dict(num=len(message_list),
+                  message_list=message_list)
+    return jsonify(result)
+
+
+@app.route('/user/<userid>/images/', methods=['GET'])
+@login_required
+def get_user_photos(userid):
+    start = request.args.get('start', '0')
+    user = load_user_by_id(int(userid))
+    if not user:
+        return jsonify({'error': 'wrong_user_id'})
+    limit = 5
+    query = user.self_photos().order_by(Image.id.desc())
+    photos = photo_2_dict(query.offset(int(start)).limit(limit).all())
+    result = dict(num=len(photos),
+                  photo_list=photos)
+    return jsonify(result)
+
+
+@app.route('/user/notifies/', methods=['GET'])
+@login_required
+def get_user_notifies():
+    start = request.args.get('start', '0')
+    limit = 15
+    query = g.user.self_notifies().filter(Notify.type != 6).order_by(Notify.id.desc())
+    notifies = notify_2_dict(query.offset(int(start)).limit(limit).all())
+    result = dict(num=len(notifies),
+                  notify_list=notifies)
+    return jsonify(result)
+
+
+# -----------------------------------用户间交互----------------------------------
+
+@app.route('/user/follow/<userid>/', methods=['POST'])
+@login_required
+def follow_user(userid):
+    try:
+        user = db.session.query(User).filter(User.id == int(userid)).one()
+    except:
+        return jsonify({'error': 'wrong_user_id'})
+    if g.user.is_following(user.id):
+        g.user.unfollow(user.id)
+        message = {'followed': False}
+    else:
+        g.user.follow(user.id)
+        message = {'followed': True}
+    return jsonify(message)
+
+
+@app.route('/user/chat/<userid>/', methods=['GET'])
+@login_required
+def get_chat_history(userid):
+    start = request.args.get('start', '0')
+    try:
+        user = db.session.query(User).filter(User.id == int(userid)).one()
+    except:
+        return jsonify({'error': 'wrong_user_id'})
+    limit = 15
+    query = g.user.get_chat_history(userid).order_by(Event.id.desc())
+    if start == '0':
+        query = query.limit(limit)
+    else:
+        query = query.filter(Event.id < int(start))
+    chats = chat_2_dict(query.all())
+    result = dict(num=len(chats),
+                  chat_list=chats[::-1])
+    return jsonify(result)
+
+
+@app.route('/user/chat/', methods=['GET'])
+@login_required
+def get_chat_list():
+    chats = g.user.get_chat_list()
+    chat_list = []
+    for i in chats.keys():
+        user = load_user_by_id(int(i))
+        event = db.session.query(Event).filter(Event.id == chats[i]).one()
+        message = event.get_message()
+        chat_dict = dict(time=tools.timestamp_2_zh(event.time),
+                         body=message.body,
+                         user_id=i,
+                         user_nickname=user.nickname,
+                         user_username=user.username,
+                         user_avatar="{}/avatar_{}".format(app.config['BASE_URL'], i))
+        chat_list.append(chat_dict)
+    result = dict(num=len(chat_list),
+                  chat_list=chat_list[::-1])
+    return jsonify(result)
+
+
+@app.route('/user/chat/<userid>/', methods=['POST'])
+@login_required
+def send_private_message(userid):
+    body = request.form.get('body', '')
+    try:
+        user = db.session.query(User).filter(User.id == int(userid)).one()
+    except:
+        return jsonify({'error': 'wrong_user_id'})
+    event = g.user.send_private_message(body, userid)
+    message = event.get_message()
+    chat_dict = dict(sponsor=event.sponsor,
+                     associate=event.associate_user,
+                     time=tools.timestamp_2_zh(event.time),
+                     body=message.body,
+                     message_id=message.id,
+                     event_id=event.id)
+    return jsonify(chat_dict)
 
 
 # --------------------------------------------时间线相关接口----------------------------------------
@@ -259,28 +429,6 @@ def get_events():
     return jsonify(result)
 
 
-@app.route('/events/<userid>/', methods=['GET'])
-@login_required
-def get_events_byid(userid):
-    limit = 10
-    start = request.args.get('start', '0')
-    type = request.args.get('event_type', 'post')
-    user = load_user_by_id(int(userid))
-    if type == 'post':
-        query = user.self_event().filter(Event.type == 1)
-    elif type == 'comment':
-        query = user.self_event().filter((Event.type == 2) | (Event.type == 3) | (Event.type == 4))
-    else:
-        query = user.self_event().filter((Event.type == 5))
-
-    query = query.order_by(Event.id.desc())
-    events = query.offset(int(start)).limit(limit).all()
-    message_list = events_2_dict(events)
-    result = dict(num=len(message_list),
-                  message_list=message_list)
-    return jsonify(result)
-
-
 # ---------------------------------------推文操作相关接口-----------------------------
 
 
@@ -356,3 +504,18 @@ def add_img():
         return jsonify({'status': 'success', 'messageId': message.id})
     else:
         return jsonify({'error': 'no_permission'})
+
+
+@app.route('/user/notifies/read/', methods=['POST'])
+@login_required
+def read_notify():
+    notify_id = request.form.get('notify_id', 0)
+    try:
+        notify = db.session.query(Notify).filter(Notify.id == int(notify_id)).one()
+    except:
+        return jsonify({'error': 'wrong_notify_id'})
+    if notify.user == g.user.id:
+        notify.read_notify()
+        return jsonify({'status': 'success', 'read': 1})
+    else:
+        return jsonify({'error': 'no_permmission'})

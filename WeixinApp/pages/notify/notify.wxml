@@ -1,0 +1,28 @@
+<!--pages/notify/notify.wxml-->
+<import src="../../templates/card.wxml" />
+
+<view class="swiper-tab">
+  <view class="swiper-tab-list fa fa-bell-o {{currentTab==0 ? 'on' : ''}}" data-current="0" bindtap="swichNav">系统通知</view>
+  <view class="swiper-tab-list fa fa-envelope-o {{currentTab==1 ? 'on' : ''}}" data-current="1" bindtap="swichNav">私信</view>
+</view>
+
+<view style="background-color:#f9f9f9">
+  <swiper current="{{currentTab}}" class="swiper-box" duration="300" bindchange="bindChange" style="height:{{winHeight-44}}px">
+
+    <swiper-item>
+      <scroll-view scroll-y="{{true}}" style="height:100%" bindscrolltolower="toBottom" lower-threshold="150" bindscrolltoupper="toUpper" upper-threshold="0" enable-back-to-top="{{true}}">
+        <block wx:for="{{notifyList}}" wx:for-index="idx">
+          <template is="notify" data="{{...item,index:idx}}"></template>
+        </block>
+      </scroll-view>
+    </swiper-item>
+
+    <swiper-item>
+      <scroll-view scroll-y="{{true}}" style="height:100%" bindscrolltolower="toBottom" lower-threshold="150" bindscrolltoupper="toUpper" upper-threshold="0" enable-back-to-top="{{true}}">
+        <block wx:for="{{chatList}}" wx:for-index="cidx">
+          <template is="chats" data="{{...item,index:cidx}}"></template>
+        </block>
+      </scroll-view>
+    </swiper-item>
+  </swiper>
+</view>

@@ -13,7 +13,7 @@
     <view class="zan-font-bold">{{user.nickname}}</view>
     <view class="zan-font-16 zan-c-gray-dark">{{'@' + user.nickname}}</view>
   </view>
-  <view wx:if="{{notSelf}}" class="zan-col zan-col-4 zan-col-offset-6" bindtap="toChat">
+  <view wx:if="{{notSelf}}" class="zan-col zan-col-4 zan-col-offset-6">
     <text class="zan-c-blue fa fa-lg fa-envelope-o"></text>
   </view>
   <view class="zan-col zan-col-6 {{notSelf ? '' : 'zan-col-offset-10'}}">
