@@ -1,0 +1,14 @@
+<import src="../../templates/card.wxml" />
+
+<!--index.wxml-->
+<view class="container">
+  <view class="edit-button" catchtap="toEditor">
+    <view class="fa fa-2x fa-pencil edit-logo"></view>
+  </view>
+  <template is="messageCard" data="{{ message_list:message_list,listName:'message_list'}}" />
+  <!-- 用来显示底部加载动画 -->
+  <view class="weui-loadmore" hidden="{{isHideLoadMore}}">
+    <view class="weui-loading"></view>
+    <view class="weui-loadmore__tips">正在加载</view>
+  </view>
+</view>

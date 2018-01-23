@@ -1,0 +1,122 @@
+/* pages/chat/chat.wxss */
+
+.chatview{
+  height:100%;
+  background-color: #f9f9f9;
+  position: relative
+}
+
+.chatend{
+  height: 1.5rem;
+}
+
+.reply-input {
+  border-top: 1px solid rgba(150, 150, 150, 0.3);
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  background-color: white;
+}
+
+.reply-tools {
+  padding-bottom: 0.5rem;
+}
+
+.tools-img {
+  margin-top: -1.2rem;
+  height: 6rem;
+}
+
+.uploaded-img {
+  height: 4.6rem;
+  padding: 0.2rem;
+}
+
+.swiper-img {
+  height: 4.2rem;
+  width: 4.2rem;
+  box-shadow: 1px 2px 3px 1px rgba(100, 100, 100, 0.3);
+}
+
+.badge-close {
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.6);
+  color: rgba(255, 255, 255, 0.6);
+  width: 1rem;
+  height: 1rem;
+  position: relative;
+  top: 25%;
+  left: 3%;
+  z-index: 100;
+  font-size: 1.9rem;
+}
+
+.close {
+  position: relative;
+  font-size: 0.7rem;
+  left: 0.2rem;
+  top: 0.1rem;
+}
+
+.tool-logo {
+  margin-top: 0.3rem;
+  text-align: center;
+  border-right: 1px solid rgba(100, 100, 100, 0.2);
+  color: #647989;
+}
+
+.reply-textarea {
+  border-bottom: 1px solid #dd6f8c;
+}
+
+.zan-btn {
+  border-radius: 0.2rem;
+}
+
+.bubble {
+  background-color: #f2f2f2;
+  border-radius: 10px;
+  box-shadow: 0 0 3px #b2b2b2;
+  display: inline-block;
+  padding: 5px 18px;
+  position: relative;
+  vertical-align: top;
+}
+
+.bubble::before {
+  background-color: #f2f2f2;
+  content: "\00a0";
+  display: block;
+  height: 18px;
+  position: absolute;
+  top: 8px;
+  transform: rotate(29deg) skew(-35deg);
+  -moz-transform: rotate(29deg) skew(-35deg);
+  -ms-transform: rotate(29deg) skew(-35deg);
+  -o-transform: rotate(29deg) skew(-35deg);
+  -webkit-transform: rotate(29deg) skew(-35deg);
+  width: 18px;
+}
+
+.you {
+  float: left;
+  margin: 10px 100px 10px 20px;
+}
+
+.you::before {
+  box-shadow: -2px 2px 2px 0 rgba(178, 178, 178, 0.4);
+  left: -7px;
+}
+
+.me {
+  color: white;
+  background-color:rgb(68,186,0);
+  float: right;
+  margin: 10px 20px 10px 100px;
+}
+
+.me::before {
+  background-color: rgb(68,186,0);
+  box-shadow: 2px -2px 2px 0 rgba(178, 178, 178, 0.4);
+  right: -7px;
+}

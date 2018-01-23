@@ -68,11 +68,11 @@
   margin-top: 0.7rem;
   border: 1px solid #dae2ea;
   border-radius: 0.3rem;
-  max-height: 5.8rem;
+  max-height: 6.4rem;
 }
 
 .quote-iamge {
-  height: 5.8rem;
+  height: 6.4rem;
   width: 100%;
 }
 
@@ -182,8 +182,4 @@
 
 .zan-btn {
   border-radius: 0.2rem;
-}
-
-.reply-tools{
-  margin-bottom: 0.3rem;
 }

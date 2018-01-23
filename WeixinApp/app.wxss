@@ -51,6 +51,12 @@
   border-radius: 50%;
 }
 
+.avatar-big {
+  width: 3.4rem;
+  height: 3.4rem;
+  border-radius: 50%;
+}
+
 .icons-bar {
   font-size: 0.8rem;
 }

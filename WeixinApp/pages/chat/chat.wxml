@@ -1,0 +1,45 @@
+<!--pages/chat/chat.wxml-->
+<import src="../../templates/card.wxml" />
+
+<view style="height:{{winHeight-44}}px">
+  <scroll-view class="chatview" scroll-y lower-threshold="150" bindscrolltoupper="toUpper" upper-threshold="100" enable-back-to-top="{{true}}" scroll-top="{{top}}" scroll-with-animation="{{animation}}">
+    <view>
+      <block wx:for="{{chatList}}" wx:for-index="idx">
+        <template is="chat" data="{{...item,me:me,user:user}}"></template>
+      </block>
+    </view>
+  </scroll-view>
+</view>
+
+<!-- 回复框 -->
+<view class="reply-input" style="padding:0.5rem">
+  <!-- 图片上传占位 -->
+  <view class="zan-row tools-img" hidden="{{uploadHidden}}">
+    <block wx:for="{{imgList}}" wx:for-item="img" wx:for-index="idx">
+      <view class="zan-col zan-col-6 uploaded-img">
+        <view class="badge-close" catchtap="popImg" data-index="{{idx}}">
+          <view class="fa fa-times close"></view>
+        </view>
+        <image class="swiper-img" src="{{img}}" mode="aspectFill">
+        </image>
+      </view>
+    </block>
+  </view>
+  <view class="zan-row">
+    <view class="zan-col zan-col-20">
+      <!-- 工具栏 -->
+      <view class="zan-row reply-tools" hidden="{{toolsHidden}}">
+        <view catchtap="uploadImg" class="fa fa-lg fa-picture-o tool-logo zan-col zan-col-5 zan-c-gray-darker"></view>
+        <view class="fa fa-lg fa-at tool-logo zan-col zan-col-5 zan-c-gray-darker"></view>
+        <checkbox-group bindchange="checkBox" class="tool-logo zan-col zan-col-5 zan-col-offset6 zan-font-12 zan-pull-right">
+          <checkbox value="retweet" checked="{{retweetCheck}}">转发</checkbox>
+        </checkbox-group>
+      </view>
+      <!-- 回复输入框 -->
+      <textarea value="{{textValue}}" fixed="true" name="textarea" bindinput="getText" class="reply-textarea zan-c-gray-darker zan-font-16" auto-height="true" maxlength="260" cursor-spacing="15" show-confirm-bar="" placeholder="发送给@{{user.username}}" />
+    </view>
+    <view class="zan-col zan-col-4">
+      <button class="zan-btn zan-btn--small zan-btn--primary" bindtap="sendSubmit">发送</button>
+    </view>
+  </view>
+</view>

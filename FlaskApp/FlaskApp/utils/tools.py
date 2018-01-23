@@ -119,3 +119,4 @@ if __name__ == '__main__':
     time = generate_timestamp()
     print(arrow.Arrow.utcfromtimestamp(time).humanize(locale='zh_cn'))
     print(qiniu_token())
+    print(match_channel('我来试试#频道测试#测试')[0][1:-1])

@@ -164,7 +164,7 @@
           </checkbox-group>
         </view>
         <!-- 回复输入框 -->
-        <textarea value="{{replyValue}}" fixed="true" name="textarea" bindfocus="showTools" bindinput="getText" class="reply-textarea zan-c-gray-darker zan-font-16" focus="{{focus}}" auto-height="true" maxlength="260" cursor-spacing="5" show-confirm-bar="" placeholder="回复给@{{replyTo.username}}"
+        <textarea value="{{replyValue}}" fixed="true" name="textarea" bindfocus="showTools" bindinput="getText" class="reply-textarea zan-c-gray-darker zan-font-16" focus="{{focus}}" auto-height="true" maxlength="260" cursor-spacing="15" show-confirm-bar="" placeholder="回复给@{{replyTo.username}}"
         />
       </view>
       <view class="zan-col zan-col-4">

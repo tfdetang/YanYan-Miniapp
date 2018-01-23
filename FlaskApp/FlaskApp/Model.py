@@ -408,10 +408,16 @@ class User(Base, Utils, db.Model, UserMixin):
 
         for j in send_list:
             if chat[str(j[0])]:
-                chat[str(j[0])] = max(chat[str(j[0])],j[1])
+                chat[str(j[0])] = max(chat[str(j[0])], j[1])
             else:
                 chat[str(j[0])] = j[1]
         return chat
+
+    def get_chat_unread(self, userid):
+        unread = db.session.query(Notify).join(Event).filter(
+            (Notify.type == 6) & (Notify.read == 0)).filter(
+            ((Event.sponsor == userid) & (Event.associate_user == self.id)))
+        return unread
 
     def __repr__(self):
         return '<User %s>' % self.nickname
@@ -502,6 +508,13 @@ class Channel(Base, db.Model, Utils):
     def is_channel(self, name):
         return db.session.query(Channel).filter(Channel.name == name).count() > 0
 
+    def most_comment_message(self):
+        query = db.session.query(Message).join(channel_2_message,
+                                               channel_2_message.c.message_id == Message.id).filter(
+            channel_2_message.c.channel_id == self.id).order_by(
+            Message.comment_count.desc())
+        return query
+
     def __repr__(self):
         return '<Channel %s>' % self.name
 
@@ -564,6 +577,17 @@ class Message(Base, db.Model, Utils):
         return '<Message %s>' % self.id
 
 
+class Moment(Base, db.Model, Utils):
+    __tablename__ = 'moment'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    message_id = Column(Integer)
+    time = Column(String(45))
+
+    def get_message(self):
+        return db.session.query(Message).filter(Message.id == self.message_id).one()
+
+
 # ----------------------------------------------Additional_obj-------------------------
 
 class Extra_user_profile(Base, db.Model, Utils):
@@ -619,14 +643,16 @@ if __name__ == '__main__':
         user4 = db.session.query(User).filter(User.id == 4).one()
         message5 = db.session.query(Message).filter(Message.id == 5).one()
         message7 = db.session.query(Message).filter(Message.id == 7).one()
+        channel = db.session.query(Channel).filter(Channel.id == 2).one()
         # events = user1.followed_event().offset(0).limit(10).all()
         # user1.set_profile()
         # user2.set_profile()
         # message7.add_images('msg_img_WrxKYo05sp')
-        # user4.create_message('大家好！我是测试用户4')
-        #user4.send_private_message('测试', 2)
+        # user4.create_message('#测试主题4# 进行主题功能的测试')
+        # user3.send_private_message('测试列表排序', 2)
 
-        #print(user2.get_chat_history(4).all())
+
+        # print(user2.get_chat_history(4).all())
         # user2.quote_message(body='', quoted_id=2)
         # user4.quote_message(body='多来测试一下消息提醒功能', quoted_id=7)
         # user2.comment_message('测试评论的显示，这是第一条评论', 13)
@@ -636,12 +662,17 @@ if __name__ == '__main__':
 
         # print(user1.self_event().order_by(Event.id.desc()).filter((Event.type == 2) | (Event.type == 3)).limit(10).all())
 
+        print(channel.most_comment_message().first())
+
         # user2.favo_message(1)
+        print(user2.is_favoed_message(1))
         print(user2.get_chat_list().keys(), user2.get_chat_list().values())
-        #user4.follow(user2.id)
-        messages = db.session.query(Message.author_id, func.max(Message.id)).group_by(Message.author_id).order_by(
-            func.max(Message.id).desc())
-        #print(messages.all())
+        print(user2.get_chat_unread(4).all())
+        # user4.follow(user2.id)
+        authors = db.session.query(Message.author_id, func.count(Message.author_id)).filter(Message.type != 4).group_by(Message.author_id).order_by(
+            func.count(Message.author_id).desc())
+        print(authors.all())
+        # print(messages.all())
         # message = db.session.query(Message).filter(Message.id == 8).one()
         # print(message.favo_users.count())
         # user2.quote_message('我们来测试一下转发 是否能正常生效',1)

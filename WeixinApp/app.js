@@ -49,12 +49,21 @@ App({
     return util.getRequest(url, data)
   },
 
-  getUser: function (userId) { // 抓取别的用户的信息
+  getUser: function (userId) { // 获取别的用户的信息
     var that = this
     var url = config.getHostUrl() + 'user/info/'
     var data = {
       login_key: wx.getStorageSync('userKey').login_key,
       userid: userId
+    }
+    return util.getRequest(url, data)
+  },
+
+  getActiveUsers: function (method) {
+    var that = this
+    var url = config.getHostUrl() + 'user/'
+    var data = {
+      method:method
     }
     return util.getRequest(url, data)
   },
@@ -79,7 +88,7 @@ App({
     return util.getRequest(url, data)
   },
 
-  loadUserEvent: function (start, userId, eventType){
+  loadUserEvent: function (start, userId, eventType) {
     var that = this
     var url = config.getHostUrl() + 'user/' + userId + '/events/'
     var data = {
@@ -90,7 +99,7 @@ App({
     return util.getRequest(url, data)
   },
 
-  loadUserPhoto: function (start, userId){
+  loadUserPhoto: function (start, userId) {
     var that = this
     var url = config.getHostUrl() + 'user/' + userId + '/images/'
     var data = {
@@ -115,6 +124,15 @@ App({
     var url = config.getHostUrl() + 'messages/' + messageId
     var data = {
       login_key: wx.getStorageSync('userKey').login_key,
+    }
+    return util.getRequest(url, data)
+  },
+
+  loadMoments: function (start) {
+    var that = this
+    var url = config.getHostUrl() + 'moments/'
+    var data = {
+      start: start
     }
     return util.getRequest(url, data)
   },
@@ -158,6 +176,15 @@ App({
     return util.getRequest(url, data)
   },
 
+  loadChannelList: function (start) {
+    var that = this
+    var url = config.getHostUrl() + 'channels/'
+    var data = {
+      start: start
+    }
+    return util.getRequest(url, data)
+  },
+
   sendChat: function (userId, body) {
     var that = this
     var url = config.getHostUrl() + 'user/chat/' + userId + '/'
@@ -189,7 +216,7 @@ App({
     return util.postRequest(url, data)
   },
 
-  createMessage: function(body) {  // 新建某条推文
+  createMessage: function (body) {  // 新建某条推文
     var that = this
     var url = config.getHostUrl() + 'message/'
     var data = {
@@ -199,7 +226,7 @@ App({
     return util.postRequest(url, data)
   },
 
-  retweetMessage: function(messageId, body){ // 转发（转发回复）某条推文
+  retweetMessage: function (messageId, body) { // 转发（转发回复）某条推文
     var that = this
     var url = config.getHostUrl() + 'message/retweet/'
     var data = {

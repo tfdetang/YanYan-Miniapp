@@ -7,6 +7,7 @@ except:
     from FlaskApp import app, db
 
 from flask import redirect, session, url_for, request, g, abort, jsonify
+from sqlalchemy import func
 from flask_login import logout_user, login_user, current_user, LoginManager
 from FlaskApp.weixin import WXAPPAPI
 from FlaskApp.Model import *
@@ -135,10 +136,34 @@ def chat_2_dict(events):
                          message_id=message.id,
                          event_id=i.id)
         chats.append(chat_dict)
+        if i.associate_user == g.user.id:
+            i.notifies[0].read = 1
+    db.session.commit()
     return chats
 
 
 # ------------------------------用户信息-----------------------------------
+
+@app.route('/user/', methods=['GET'])
+def user_list():
+    limit = 6
+    method = request.args.get('method', 'active')
+    range = request.args.get('range', '500')
+    query = db.session.query(Message.author_id, func.count(Message.author_id)).filter(Message.type != 4).group_by(
+        Message.author_id).order_by(
+        func.count(Message.author_id).desc())
+    authors = query.limit(limit).all()
+    author_list = []
+    for i in authors:
+        author = db.session.query(User).filter(User.id == i[0]).one()
+        author_dict = dict(user_id = author.id,
+                           avatar = "{}/avatar_{}".format(app.config['BASE_URL'], author.id),
+                           nickname = author.nickname)
+        author_list.append(author_dict)
+    result = dict(num=len(author_list),
+                  author_list=author_list)
+    return jsonify(result)
+
 
 @app.route('/user/self/', methods=['GET'])
 @login_required
@@ -257,15 +282,19 @@ def get_chat_list():
         user = load_user_by_id(int(i))
         event = db.session.query(Event).filter(Event.id == chats[i]).one()
         message = event.get_message()
+        unread = g.user.get_chat_unread(int(i)).count()
         chat_dict = dict(time=tools.timestamp_2_zh(event.time),
+                         event_id=event.id,
                          body=message.body,
                          user_id=i,
                          user_nickname=user.nickname,
                          user_username=user.username,
-                         user_avatar="{}/avatar_{}".format(app.config['BASE_URL'], i))
+                         user_avatar="{}/avatar_{}".format(app.config['BASE_URL'], i),
+                         unread=unread)
         chat_list.append(chat_dict)
+    chat_list.sort(key=lambda x: x['event_id'], reverse=True)
     result = dict(num=len(chat_list),
-                  chat_list=chat_list[::-1])
+                  chat_list=chat_list)
     return jsonify(result)
 
 
@@ -290,7 +319,7 @@ def send_private_message(userid):
 
 # --------------------------------------------时间线相关接口----------------------------------------
 
-def message_2_dict(i):
+def message_2_dict(i, login=True):
     '''
     输入一个message对象，获取其dict格式的信息
     :param i: message对象
@@ -309,11 +338,11 @@ def message_2_dict(i):
                    author_id=i.author_id,
                    nickname=user.nickname,
                    username=user.username,
-                   is_favoed=g.user.is_favoed_message(i.id),
-                   is_quoted=g.user.is_quoted_message(i.id),
-                   is_comment=g.user.is_commented_message(i.id),
                    avatar=app.config['BASE_URL'] + '/avatar_' + str(i.author_id))
-
+    if login:
+        message['is_favoed'] = g.user.is_favoed_message(i.id)
+        message['is_quoted'] = g.user.is_quoted_message(i.id)
+        message['is_comment'] = g.user.is_commented_message(i.id)
     if i.images.count() > 0:
         for j in i.images:
             images.append(j.full_url())
@@ -426,6 +455,44 @@ def get_events():
     message_list = events_2_dict(events)
     result = dict(num=len(message_list),
                   message_list=message_list)
+    return jsonify(result)
+
+
+@app.route('/moments/', methods=['GET'])
+def get_moments():
+    limit = 6
+    start = request.args.get('start', '0')
+    query = db.session.query(Moment).order_by(Moment.id.desc())
+    moments = query.offset(int(start)).limit(limit).all()
+    moment_list = []
+    for i in moments:
+        moment_list.append(message_2_dict(i.get_message(), login=False))
+    result = dict(num=len(moment_list),
+                  moment_list=moment_list)
+    return jsonify(result)
+
+
+@app.route('/channels/', methods=['GET'])
+def get_channels():
+    limit = 5
+    start = request.args.get('start', '0')
+    range = request.args.get('range', '500')
+    method = request.args.get('method', 'comment')  # 暂时只能通过评论数来对channel下的Message进行排序
+    query = db.session.query(channel_2_message.c.channel_id, func.count(channel_2_message.c.channel_id)).group_by(
+        channel_2_message.c.channel_id).order_by(
+        func.count(channel_2_message.c.channel_id).desc())  # todo: 把对参与计算的message的range纳入计算
+    channels = query.offset(start).limit(limit).all()
+    channel_list = []
+    for i in channels:
+        message_count = db.session.query(channel_2_message).filter(channel_2_message.c.channel_id == i[0]).count()
+        channel = db.session.query(Channel).filter(Channel.id == i[0]).one()
+        message = channel.most_comment_message().first()
+        channel_dict = dict(channel_name=channel.name,
+                            message_count=message_count,
+                            message=message_2_dict(message, login=False))
+        channel_list.append(channel_dict)
+    result = dict(num=len(channel_list),
+                  channel_list=channel_list)
     return jsonify(result)
 
 

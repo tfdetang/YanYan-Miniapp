@@ -71,7 +71,7 @@ Page({
             buttonLoading: ""
           })
           wx.reLaunch({
-            url: "../index/index"
+            url: "../followed/index"
           })
         }, 2000)
       })

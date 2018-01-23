@@ -1,20 +1,104 @@
-/**index.wxss**/
-
-.edit-button{
-  border-radius: 50%;
-  color: white;
-  background-color: #dd6f8c; 
-  width: 3.5rem;
-  height: 3.5rem;
-  position: fixed;
-  bottom: 5%;
-  right:5%;
-  z-index: 100;
-  box-shadow: 1px 3px 8px 1px rgba(50,50, 50, 0.3);
+.fake-search {
+  background-color: white;
+  height: 1.8rem;
+  padding: 0.6rem;
+  box-shadow: 1px 1px 2px 1px rgba(100, 100, 100, 0.4);
+  margin-top: -1rem;
 }
 
-.edit-logo{
-  position:absolute;
-  top:22%;
-  left:27%;
+.underline{
+  border-bottom: 2px solid #dd6f8c;
+}
+
+.search-icon {
+  font-size: 1rem;
+}
+
+.zan-panel {
+  padding: 1rem;
+}
+
+.card-holder {
+  height: 11rem;
+  white-space: nowrap;
+  overflow: scroll;
+}
+
+.user-holder{
+  height: 6rem;
+  white-space: nowrap;
+  overflow: scroll;
+}
+
+.card-inline {
+  padding: 0.4rem;
+  display: inline-block;
+}
+
+.user-inline{
+  padding: 0.6rem;
+  display: inline-block;
+  text-align: center
+}
+
+.moment {
+  height: 9.6rem;
+  width: 14rem;
+  position: relative;
+  border-radius: 0.3rem;
+  box-shadow: 1px 1px 2px 1px rgba(100, 100, 100, 0.4);
+  background-image: linear-gradient(to bottom, white, black, black);
+}
+
+.black-card {
+  background-image: radial-gradient(farthest-side at 20% 20%, #4D4545, #393232);
+}
+
+.moment-image{
+  height: 9.6rem;
+  width: 14rem;
+  position: absolute;
+  margin: auto;
+  border-radius: 0.3rem;
+  opacity: 0.7
+}
+
+.moment-text {
+  font-size: 0.8rem;
+  position: absolute;
+  top:0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  margin: auto;
+  white-space: normal;
+  max-height: 3.0rem;
+  max-width: 12rem;
+  display: -webkit-box;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  word-break: break-all;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-height: 130%;
+  color: white;
+  text-align: center
+}
+
+.show-count{
+  position: absolute;
+  right: 5%;
+  bottom: 5%;
+  margin: auto;
+}
+
+.count-icon{
+  font-size:0.7rem;
+  color: white
+}
+
+.channel-col{
+ padding-top: 0.5rem;
+ padding-bottom: 0.5rem;
+ min-height: 2rem;
 }

@@ -1,19 +1,19 @@
 CSRF_ENABLED = True
 DROP_ALL = False
 
-SERVICE_URL = 'quanterhome.com'
+SERVICE_URL = '访问域名'
 
-WEIXIN_APPID = 'wx9ea74b7bb426f364'
-WEIXIN_SECRET = '323296cd0367be23a96daa57feb46270'
+WEIXIN_APPID = '微信appid'
+WEIXIN_SECRET = '微信secret'
 
-QINIU_AK = 'ib6LX9Qrx3mWyCE3R1S1xtAYcn0sMHMoM8hYpk85'
-QINIU_SK = 'K02BuJ-xwJ0tXyzYaf6Q2pYB2Jd6kWhXvwdiqfWQ'
-BUCKET = 'miniapp'
-BASE_URL = 'http://p26dtxwn1.bkt.clouddn.com'
+QINIU_AK = '七牛appkey'
+QINIU_SK = '七牛secretkey'
+BUCKET = '空间名'
+BASE_URL = '空间地址'
 
-SECRET_KEY = 'you-will-never-guess'
+SECRET_KEY = '网站地址'
 UPLOAD_TEMP = '/var/www/FlaskApp/FlaskApp/static/temp'
-SQLALCHEMY_DATABASE_URI = 'mysql://root:123456@draket.asuscomm.com:3306/weixinapp?charset=utf8'
+SQLALCHEMY_DATABASE_URI = '数据库地址'
 SQLALCHEMY_POOL_SIZE = 50
 SQLALCHEMY_POOL_TIMEOUT = 10
 SQLALCHEMY_TRACK_MODIFICATIONS = True

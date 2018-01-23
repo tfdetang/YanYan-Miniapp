@@ -35,6 +35,26 @@
   </block>
 </template>
 
+<!-- 精彩瞬间卡片 -->
+<template name="momentCard">
+  <view class="{{images.length>0? 'img-card':'black-card'}} moment">
+    <image wx:if="{{images.length>0}}" src="{{images[0]}}" mode="aspectFill" class="moment-image"></image>
+    <view class="moment-text">{{body}}</view>
+    <view class="show-count">
+      <text class="fa fa-heart count-icon" decode="true">&nbsp;{{favo_count}}&nbsp;&nbsp;&nbsp;</text>
+      <text class="fa fa-comment count-icon" decode="true">&nbsp;{{comment_count}}</text>
+    </view>
+  </view>
+</template>
+
+<!-- 用户推荐显示 -->
+<template name="Users">
+  <view class="user-holder" catchtap="toUser" data-userid="{{user_id}}">
+    <image src="{{avatar}}" class="avatar-big"></image>
+    <view class="zan-font-14 zan-c-gray-darker">{{nickname}}</view>
+  </view>
+</template>
+
 <!--聊天列表显示模板-->
 <template name="chats">
   <view class="panel read">
@@ -43,9 +63,14 @@
         <image class="avatar" src="{{user_avatar}}" catchtap="toUser" data-userid="{{user_id}}"></image>
       </view>
       <view class="zan-col zan-col-20">
-        <text class="zan-font-16 zan-font-bold" catchtap="toUser" data-userid="{{user_id}}">{{user_nickname}}</text>
+        <text class="zan-font-16 zan-font-bold" catchtap="toUser" data-userid="{{user_id}}" decode='true'>{{user_nickname}}</text>
         <text class="zan-font-12 zan-c-gray-dark zan-pull-right" decode='true'> &nbsp; {{time}}</text>
-        <view class="zan-font-16 zan-c-gray-darker notify-body">{{body}}</view>
+        <view class="zan-row">
+          <view class="zan-font-16 zan-c-gray-darker notify-body zan-col zan-col-22">{{body}}</view>
+          <view class="zan-col zan-col-2">
+            <text class="zan-tag" wx:if="{{unread>0}}">{{unread}}</text>
+          </view>
+        </view>
       </view>
     </view>
   </view>
