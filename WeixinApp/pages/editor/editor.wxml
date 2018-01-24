@@ -20,7 +20,7 @@
     </view>
   </view>
   <text class="zan-c-gray zan-font-14" style="margin-left:1rem">已插入图片: {{imgLength}}/4</text>
-  <swiper indicator-dots="true" indicator-color="#dd6f8c" class="image-container" current="{{swiperCurrent}}" circular="true">
+  <swiper indicator-dots="true" indicator-color="#dd6f8c" class="image-container" current="{{swiperCurrent}}" circular="true" previous-margin="25px" next-margin="25px">
     <block wx:for="{{imgList}}" wx:for-item="img" wx:for-index="idx">
       <swiper-item>
         <view class="badge-close" catchtap="popImg" data-index="{{idx}}">

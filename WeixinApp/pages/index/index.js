@@ -15,6 +15,7 @@ Page({
       that.setData({
         momentList: res.data.moment_list
       })
+      wx.setStorageSync("moments", res.data.moment_list)
     })
 
     app.loadChannelList(0).then(res => {
@@ -23,6 +24,33 @@ Page({
       })
     })
 
+    app.getActiveUsers('active').then(res => {
+      that.setData({
+        activeUsers: res.data.author_list
+      })
+    })
+  },
+
+  onPullDownRefresh: function () { //下拉刷新信息
+    var that = this
+    wx.showNavigationBarLoading()
+    app.loadMoments(0).then(res => {
+      that.setData({
+        momentList: res.data.moment_list
+      })
+    })
+    app.loadChannelList(0).then(res => {
+      that.setData({
+        channelList: res.data.channel_list
+      })
+      wx.stopPullDownRefresh()
+      wx.hideNavigationBarLoading()
+      wx.showToast({
+        title: '刷新完毕',
+        icon: 'success',
+        duration: 800
+      })
+    })
     app.getActiveUsers('active').then(res => {
       that.setData({
         activeUsers: res.data.author_list
@@ -50,5 +78,23 @@ Page({
       })
     }
   },
+
+  toChannel: function (event) {
+    var that = this
+    var channelName = event.currentTarget.dataset.name
+    var url = '../channel_message/channel_message?channelname=' + channelName
+    wx.navigateTo({
+      url: url,
+    })
+  },
+
+  toMoment: function (event) {
+    var that = this
+    var idx = event.currentTarget.dataset.idx
+    var url = '../moment/moment?idx=' + idx
+    wx.navigateTo({
+      url: url,
+    })
+  }
 
 })

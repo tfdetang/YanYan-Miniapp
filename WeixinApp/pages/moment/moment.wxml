@@ -1,0 +1,45 @@
+<!--pages/moment/moment.wxml-->
+<swiper class="moment-swiper" current="{{currentMoment}}" style="height:{{winHeight+10}}px;width:{{winWidth+10}}px" circular>
+  <block wx:for="{{moments}}">
+    <swiper-item>
+      <view class="moment-page {{item.images.length>0? 'page-img':'page-black'}}">
+        <image src="{{item.images[0]}}" mode="aspectFill" class="moment-img" style="height:100%;width:100%"></image>
+      </view>
+      <view wx:if="{{item.images.length>0}}" class="trans-pannel" bindtap="toMessage" data-messageid="{{item.id}}">
+        <text class="zan-font-14 zan-font-bold" decode='true'>{{item.nickname}} </text>
+        <text class="zan-font-14 zan-c-gray">@{{item.username}}</text>
+        <view class="zan-font-16 moment-body">{{item.body}}</view>
+        <view wx:if="{{item.quoted}}" class="quote-pannel">
+          <text class="zan-font-14 zan-font-bold" decode='true'>{{item.quoted.nickname}} </text>
+          <text class="zan-font-14 zan-c-gray">@{{item.quoted.username}}</text>
+          <view class="zan-font-16">{{item.quoted.body}}</view>
+        </view>
+        <view class="icons">
+          <text class="fa fa-heart-o" decode='true'> {{item.favo_count}} &nbsp;&nbsp;</text>
+          <text class="fa fa-comment-o" decode='true'> {{item.comment_count}}</text>
+        </view>
+      </view>
+      <view wx:else class="text-pannel" bindtap="toMessage" data-messageid="{{item.id}}">
+        <view class="zan-row">
+          <view class="zan-col zan-col-3">
+            <image class="avatar-small" src="{{item.avatar}}"></image>
+          </view>
+          <view class="zan-col zan-col-20" style=" line-height: 80%;">
+            <text class="zan-font-14 zan-font-bold" decode='true'>{{item.nickname}}\n</text>
+            <text class="zan-font-14 zan-c-gray">@{{item.username}}</text>
+          </view>
+        </view>
+        <view class="zan-font-16 moment-body">{{item.body}}</view>
+        <view wx:if="{{item.quoted}}" class="quote-pannel">
+          <text class="zan-font-14 zan-font-bold" decode='true'>{{item.quoted.nickname}} </text>
+          <text class="zan-font-14 zan-c-gray">@{{item.quoted.username}}</text>
+          <view class="zan-font-16">{{item.quoted.body}}</view>
+        </view>
+        <view class="icons">
+          <text class="fa fa-heart-o" decode='true'> {{item.favo_count}} &nbsp;&nbsp;</text>
+          <text class="fa fa-comment-o" decode='true'> {{item.comment_count}}</text>
+        </view>
+      </view>
+    </swiper-item>
+  </block>
+</swiper>

@@ -59,6 +59,7 @@ Page({
 
   onPullDownRefresh: function () { //下拉刷新信息
     var that = this
+    wx.showNavigationBarLoading()
     that.setData({
       postList: [],
       commentList: [],

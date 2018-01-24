@@ -1,72 +1,28 @@
-//index.js
-//获取应用实例
+// pages/channel_message/channel_message.js
 const config = require('../../utils/config.js')
 const util = require('../../utils/util.js')
 const app = getApp()
 
 Page({
+
   data: {
-    message_list: [],
+    channelName: "",
+    messageList: [],
     isHideLoadMore: true,
   },
-  onLoad: function (option) {
-    var that = this
-    wx.showToast({
-      icon: 'loading',
-      title: '加载中',
-      mask: true,
-      duration: 1500
-    })
-    app.loadEvents(0, 0).then(res => {
-      var list_message = res.data.message_list
-      that.setData({
-        message_list: list_message,
-      })
-      wx.setStorageSync('messageBottom', list_message[list_message.length - 1].event_id) //记录最下面一条消息的id
-    })
-  },
 
-  onPullDownRefresh: function () { //下拉刷新信息
-    var that = this
-    wx.showNavigationBarLoading()
-    app.loadEvents(0, 0).then(res => {      
-      var list_message = res.data.message_list
-      that.setData({
-        message_list: list_message,
-      })
-      wx.setStorageSync('messageBottom', list_message[list_message.length - 1].event_id)
-      wx.stopPullDownRefresh()
-      wx.hideNavigationBarLoading()
-      wx.showToast({
-        title: '刷新完毕',
-        icon: 'success',
-        duration: 800
-      })
-    })
-  },
 
-  onReachBottom: function () { //浏览到底部自动更新信息
+  onLoad: function (options) {
     var that = this
-    that.setData({
-      isHideLoadMore: false
-    })
-    var bottom = wx.getStorageSync('messageBottom')
-    app.loadEvents(bottom, 0).then(res => {
-      var get_list = res.data.message_list
-      var old_list = that.data.message_list
-      var list_message = old_list.concat(get_list)
+    var channelName = options.channelname
+    app.loadChannelMessages(channelName, 0).then(res => {
       that.setData({
-        message_list: list_message,
-        isHideLoadMore: true
+        messageList: res.data.message_list,
+        channelName: channelName
       })
-      if (list_message[list_message.length - 1].event_id == bottom) {
-        wx.showToast({
-          title: '已经到底了',
-          duration: 800
-        })
-      } else {
-        wx.setStorageSync('messageBottom', list_message[list_message.length - 1].event_id)
-      }
+      wx.setNavigationBarTitle({
+        title: "#" + channelName,
+      })
     })
   },
 
@@ -93,20 +49,12 @@ Page({
     var that = this
     var userId = event.currentTarget.dataset.userid
     var selfId = wx.getStorageSync('userinfo').user_id
-    if (userId != selfId){
+    if (userId != selfId) {
       var url = '../users/users?userid=' + userId
       wx.navigateTo({
         url: url,
       })
     }
-  },
-
-  toEditor: function (event) { // 跳转到发推文的页面
-    var that = this
-    var url = '../editor/editor'
-    wx.navigateTo({
-      url: url,
-    })
   },
 
   favoButton: function (event) { //点击喜爱
@@ -121,7 +69,7 @@ Page({
     var index = event.currentTarget.dataset.idx
     var messageId = event.currentTarget.dataset.message.id
     var favoCount = listName + "[" + index + "].favo_count"
-    var isFavoed = listName+ "[" + index + "].is_favoed"
+    var isFavoed = listName + "[" + index + "].is_favoed"
     app.favoMessage(messageId).then(res => {
       var params = {}
       params[favoCount] = res.data.count
@@ -141,14 +89,14 @@ Page({
     wx.showActionSheet({
       itemList: ['转发', '转发并回复'],
       success: function (res) {
-        if (res.tapIndex == 0){  //直接转发
-          app.retweetMessage(messageId,"").then(res => {
+        if (res.tapIndex == 0) {  //直接转发
+          app.retweetMessage(messageId, "").then(res => {
             var params = {}
             params[quoteCount] = res.data.quotecount
             params[isQuoted] = true
             that.setData(params)
           })
-        }else{ // 转发并回复
+        } else { // 转发并回复
           wx.navigateTo({
             url: url + '&retweetCheck=true',
           })
@@ -160,5 +108,46 @@ Page({
         console.log(res.errMsg)
       }
     })
-  }
+  },
+
+  onPullDownRefresh: function () {
+    var that = this
+    wx.showNavigationBarLoading()
+    app.loadChannelMessages(that.data.channelName, 0).then(res => {
+      that.setData({
+        messageList: res.data.message_list,
+      })
+      wx.stopPullDownRefresh()
+      wx.hideNavigationBarLoading()
+      wx.showToast({
+        title: '刷新完毕',
+        icon: 'success',
+        duration: 800
+      })
+    })
+  },
+
+
+  onReachBottom: function () {
+    var that = this
+    that.setData({
+      isHideLoadMore: false
+    })
+    var start = that.data.messageList.length
+    var old_list = that.data.messageList
+    app.loadChannelMessages(that.data.channelName, start).then(res => {
+      var get_list = res.data.message_list
+      var list_message = old_list.concat(get_list)
+      that.setData({
+        messageList: list_message,
+        isHideLoadMore: true
+      })
+      if (get_list.length == 0) {
+        wx.showToast({
+          title: '已经到底了',
+          duration: 800
+        })
+      }
+    })
+  },
 })

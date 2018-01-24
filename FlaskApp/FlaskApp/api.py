@@ -149,16 +149,21 @@ def user_list():
     limit = 6
     method = request.args.get('method', 'active')
     range = request.args.get('range', '500')
-    query = db.session.query(Message.author_id, func.count(Message.author_id)).filter(Message.type != 4).group_by(
+    count = db.session.query(Message).count()
+    start = count - int(range)
+    if start < 0:
+        start = 0
+    query = db.session.query(Message.author_id, func.count(Message.author_id)).filter(
+        (Message.type != 4) & (Message.id > start)).group_by(
         Message.author_id).order_by(
         func.count(Message.author_id).desc())
     authors = query.limit(limit).all()
     author_list = []
     for i in authors:
         author = db.session.query(User).filter(User.id == i[0]).one()
-        author_dict = dict(user_id = author.id,
-                           avatar = "{}/avatar_{}".format(app.config['BASE_URL'], author.id),
-                           nickname = author.nickname)
+        author_dict = dict(user_id=author.id,
+                           avatar="{}/avatar_{}".format(app.config['BASE_URL'], author.id),
+                           nickname=author.nickname)
         author_list.append(author_dict)
     result = dict(num=len(author_list),
                   author_list=author_list)
@@ -407,6 +412,30 @@ def photo_2_dict(photos):
     return photo_list
 
 
+@app.route('/messages/', methods=['GET'])
+@login_required
+def get_messages_list():
+    start = request.args.get('start', '0')
+    channel_name = request.args.get('channel', '')
+    limit = 10
+    channel = db.session.query(Channel).filter(Channel.name == channel_name).one()
+    message_list = []
+    for i in channel.messages[int(start):int(start)+limit]:
+        message = message_2_dict(i)
+        message['time'] = tools.timestamp_2_zh(i.time_create)
+        if i.type == 0:
+            message['type'] = 1
+        elif i.type == 1:
+            message['type'] = 3
+        elif i.type == 2:
+            message['type'] = 2
+            message['quoted'] = message_2_dict(i.get_quoted_message())
+        message_list.append(message)
+    result = dict(num=len(message_list),
+                  message_list=message_list[::-1])
+    return jsonify(result)
+
+
 @app.route('/messages/<id>/', methods=['GET'])
 def get_message(id):
     message = db.session.query(Message).filter(Message.id == id).one()
@@ -466,7 +495,10 @@ def get_moments():
     moments = query.offset(int(start)).limit(limit).all()
     moment_list = []
     for i in moments:
-        moment_list.append(message_2_dict(i.get_message(), login=False))
+        message = message_2_dict(i.get_message(), login=False)
+        if message['type'] == 2 or message['type'] == 1:
+            message['quoted'] = message_2_dict(i.get_message().get_quoted_message(), login=False)
+        moment_list.append(message)
     result = dict(num=len(moment_list),
                   moment_list=moment_list)
     return jsonify(result)

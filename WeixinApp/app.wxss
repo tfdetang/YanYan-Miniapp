@@ -57,6 +57,12 @@
   border-radius: 50%;
 }
 
+.avatar-small {
+  width: 2.2rem;
+  height: 2.2rem;
+  border-radius: 50%;
+}
+
 .icons-bar {
   font-size: 0.8rem;
 }

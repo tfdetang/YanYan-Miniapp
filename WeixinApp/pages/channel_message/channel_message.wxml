@@ -1,0 +1,12 @@
+<import src="../../templates/card.wxml" />
+
+<!--index.wxml-->
+<view class="container">
+  <view style="text-align:center"><text class="zan-c-gray">#{{channelName}}</text></view>
+  <template is="messageCard" data="{{ message_list:messageList,listName:'messageList'}}" />
+  <!-- 用来显示底部加载动画 -->
+  <view class="weui-loadmore" hidden="{{isHideLoadMore}}">
+    <view class="weui-loading"></view>
+    <view class="weui-loadmore__tips">正在加载</view>
+  </view>
+</view>

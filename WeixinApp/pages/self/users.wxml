@@ -47,7 +47,7 @@
 </view>
 
 <view style="background-color:#f9f9f9">
-  <swiper current="{{currentTab}}" class="swiper-box" duration="300" bindchange="bindChange" style="height:{{winHeight-44}}px">
+  <swiper current="{{currentTab}}" class="swiper-box" duration="300" bindchange="bindChange" style="height:{{winHeight-44}}px" skip-hidden-item-layout="true">
     <!-- 推文 -->
     <swiper-item>
       <scroll-view scroll-y="{{scrollY}}" style="height:100%" bindscrolltolower="toBottom" lower-threshold="150" bindscrolltoupper="toUpper" upper-threshold="0" enable-back-to-top="{{true}}">

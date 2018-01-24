@@ -37,7 +37,7 @@
 
 <!-- 精彩瞬间卡片 -->
 <template name="momentCard">
-  <view class="{{images.length>0? 'img-card':'black-card'}} moment">
+  <view class="{{images.length>0? 'img-card':'black-card'}} moment" catchtap="toMoment" data-idx="{{index}}">
     <image wx:if="{{images.length>0}}" src="{{images[0]}}" mode="aspectFill" class="moment-image"></image>
     <view class="moment-text">{{body}}</view>
     <view class="show-count">
@@ -145,19 +145,14 @@
         <view class='zan-tag zan-c-gray-darker' catchtap="toUser" data-userid="{{item.sponsor_id}}">{{item.sponsor_nickname}} </view>
         <text class='zan-c-gray-darker zan-font-12'> {{item.time}} 转发了</text>
       </view>
-      <view wx:elif="{{item.type == 3}}" class='message-header'>
-        <text class="fa fa-comments zan-c-gray"></text>
-        <text decode='true'>&nbsp;</text>
-        <view class='zan-tag zan-c-gray-darker' catchtap="toUser" data-userid="{{item.sponsor_id}}">{{item.nickname}} </view>
-        <text class='zan-c-gray-darker zan-font-12'> {{item.time}} 回复到</text>
-      </view>
       <view style="padding: 1rem;" class="zan-row">
         <view class="zan-col zan-col-4">
           <image class="avatar" src="{{item.avatar}}" catchtap="toUser" data-userid="{{item.author_id}}"></image>
         </view>
         <view class="zan-col zan-col-20">
           <text class="zan-font-16 zan-font-bold" catchtap="toUser" data-userid="{{item.author_id}}">{{item.nickname}}</text>
-          <text class="zan-font-12 zan-c-gray-dark" decode='true'> &nbsp; {{item.time}}</text>
+          <text class="zan-font-16" wx:if="{{item.type == 3}}" decode="true"> &nbsp;回复到:</text>
+          <text class="zan-font-12 zan-c-gray-dark zan-pull-right" decode='true'> &nbsp; {{item.time}}</text>
           <view class="zan-font-16 zan-c-gray-darker">{{item.body}}</view>
           <!-- 图片显示控件 -->
           <view class='zan-row' style="padding-top:0.5rem">

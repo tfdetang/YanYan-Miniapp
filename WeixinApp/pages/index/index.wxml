@@ -16,7 +16,7 @@
   </view>
   <scroll-view scroll-x="true" class="card-holder">
     <view wx:for="{{momentList}}" class="card-inline">
-      <template is="momentCard" data="{{...item}}" />
+      <template is="momentCard" data="{{...item,index:index}}" />
     </view>
   </scroll-view>
 
@@ -24,9 +24,9 @@
   <view class="zan-panel-title">
     <text class="underline">话题趋势</text>
   </view>
-  <view class="zan-panel" style="padding:0.5rem">
-    <view wx:for="{{channelList}}" class="zan-row channel-col">
-      <view class="zan-col zan-col-2 zan-c-gray-dark">{{index + 1}}</view>
+  <view class="zan-panel card" style="padding:0.5rem">
+    <view wx:for="{{channelList}}" class="zan-row channel-col" catchtap="toChannel" data-name="{{item.channel_name}}">
+      <view class="zan-col zan-col-2 zan-c-gray-dark">{{index + 1}}.</view>
       <view class="zan-col zan-col-20">
         <view class="zan-font-bold zan-font-16">#{{item.channel_name}}</view>
         <view class="zan-font-12 zan-c-gray-darker">{{item.message_count}}篇推文</view>
@@ -41,7 +41,7 @@
 
   <!--活跃用户-->
   <view class="zan-panel-title">
-    <text class="underline">活跃用户</text>
+    <text class="underline">有趣的人</text>
   </view>
   <scroll-view scroll-x="true" class="user-holder">
     <view wx:for="{{activeUsers}}" class="user-inline">
@@ -49,8 +49,8 @@
     </view>
   </scroll-view>
 
-  <view style="text-align:center;padding:1rem">
-    <text class="fa fa-copyright zan-c-gray zan-font-12" decode="true"> 2018 眼眼三笑\n</text>
-    <text class="fa fa-github zan-c-gray zan-font-8" decode="true">tfdetang/YanYan-Miniapp.git</text>
+  <view style="text-align:center;padding-top:2rem">
+    <text class="fa fa-copyright footer" decode="true"> 2018 眼眼三笑\n</text>
+    <text class="fa fa-github footer" decode="true">tfdetang/YanYan-Miniapp.git</text>
   </view>
 </view>

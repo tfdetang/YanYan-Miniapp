@@ -8,7 +8,9 @@
     "pages/users/users",
     "pages/self/users",
     "pages/notify/notify",
-    "pages/chat/chat"
+    "pages/chat/chat",
+    "pages/channel_message/channel_message",
+    "pages/moment/moment"
   ],
   "window": {
     "backgroundTextStyle": "light",

@@ -88,6 +88,17 @@ App({
     return util.getRequest(url, data)
   },
 
+  loadChannelMessages: function (channel, start)  {
+    var that = this
+    var url = config.getHostUrl() + 'messages/'
+    var data = {
+      login_key: wx.getStorageSync('userKey').login_key,
+      start: start,
+      channel: channel
+    }
+    return util.getRequest(url, data)
+  },
+
   loadUserEvent: function (start, userId, eventType) {
     var that = this
     var url = config.getHostUrl() + 'user/' + userId + '/events/'
