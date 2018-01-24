@@ -1,5 +1,6 @@
 const config = require('../../utils/config.js')
 const util = require('../../utils/util.js')
+var WxParse = require('../../wxParse/wxParse.js')
 const app = getApp()
 
 Page({
@@ -20,18 +21,22 @@ Page({
     uploadHidden: true
   },
   onLoad: function (option) {
+    var that = this
     app.loadMessage(option.messageid).then(res => {
-      var that = this
       that.setData({
         message: res.data,
         replyTo: res.data,
         focus: option.focus,
         retweetCheck: option.retweetCheck,
       })
+      var article = that.data.message.body
+      WxParse.wxParse('article', 'html', article, that, 5);
       if (res.data.quoted) {
         that.setData({
           origin: res.data.quoted
         })
+        var originArticle = res.data.quoted.body
+        WxParse.wxParse('originArticle', 'html', originArticle, that, 5);
       }
       app.loadReplies(option.messageid, 0).then(res => {
         var that = this
@@ -324,5 +329,21 @@ Page({
       params[isFavoed] = res.data.favo
       that.setData(params)
     })
+  },
+
+  wxParseTagATap: function (e) {
+    var href = e.currentTarget.dataset.src;
+    //我们可以在这里进行一些路由处理
+    if (href.length > 0) {
+      if(href[0] == '#'){
+        wx.navigateTo({
+          url: '../channel_message/channel_message?channelname=' + href.substring(1),
+        })
+      }else if(href[0] == '@'){
+        wx.navigateTo({
+          url: '../users/users?userid=' + href.substring(1),
+        })
+      }
+    }
   }
 })

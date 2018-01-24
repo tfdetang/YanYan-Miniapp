@@ -89,7 +89,15 @@ def qiniu_token():
 
 
 def match_channel(string):
-    return re.findall(r"#.+?[\s,./;'\\，。/；#’、]", string)
+    return re.findall(r"#.+?[\s,./;'\\，。/；#@’、]", string)
+
+
+def match_person(string):
+    return re.findall(r"@.+?[\s,./;'\\，。/；#@’、]", string)
+
+
+def username_requlier(nickname):
+    return ''.join(e for e in nickname if e.isalnum())
 
 
 class MomentJs(object):
@@ -119,4 +127,4 @@ if __name__ == '__main__':
     time = generate_timestamp()
     print(arrow.Arrow.utcfromtimestamp(time).humanize(locale='zh_cn'))
     print(qiniu_token())
-    print(match_channel('我来试试#频道测试#测试')[0][1:-1])
+    print(username_requlier('abcc&*中文是可以的—__^%d[]//'))

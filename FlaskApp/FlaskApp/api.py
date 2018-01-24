@@ -324,7 +324,7 @@ def send_private_message(userid):
 
 # --------------------------------------------时间线相关接口----------------------------------------
 
-def message_2_dict(i, login=True):
+def message_2_dict(i, login=True, constract=False):
     '''
     输入一个message对象，获取其dict格式的信息
     :param i: message对象
@@ -333,7 +333,6 @@ def message_2_dict(i, login=True):
     user = load_user_by_id(i.author_id)
     images = []
     message = dict(id=i.id,
-                   body=i.body,
                    type=i.type,
                    time_create=tools.timestamp_2_zh(i.time_create),
                    time_update=tools.timestamp_2_zh(i.time_update),
@@ -344,6 +343,10 @@ def message_2_dict(i, login=True):
                    nickname=user.nickname,
                    username=user.username,
                    avatar=app.config['BASE_URL'] + '/avatar_' + str(i.author_id))
+    if constract:
+        message['body'] = constract_message(i.body)
+    else:
+        message['body'] = i.body
     if login:
         message['is_favoed'] = g.user.is_favoed_message(i.id)
         message['is_quoted'] = g.user.is_quoted_message(i.id)
@@ -439,7 +442,7 @@ def get_messages_list():
 @app.route('/messages/<id>/', methods=['GET'])
 def get_message(id):
     message = db.session.query(Message).filter(Message.id == id).one()
-    message_dict = message_2_dict(message)
+    message_dict = message_2_dict(message, constract=True)
     if message.type != 0:
         quoted = db.session.query(Message).filter(Message.id == message.quote_id).one()
         message_dict['quoted'] = message_2_dict(quoted)

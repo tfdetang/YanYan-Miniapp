@@ -1,7 +1,12 @@
 @import "dist/index.wxss";
 @import "utils/fontawesome.wxss";
+@import "wxParse/wxParse.wxss";
 
 /**app.wxss**/
+
+.link{
+  color:#dd6f8c;
+}
 
 .hr-line {
   height: 0px;

@@ -2,6 +2,7 @@
 //获取应用实例
 const config = require('../../utils/config.js')
 const util = require('../../utils/util.js')
+var WxParse = require('../../wxParse/wxParse.js')
 const app = getApp()
 
 Page({
