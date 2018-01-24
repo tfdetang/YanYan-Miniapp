@@ -19,7 +19,7 @@ executor = ThreadPoolExecutor(20)
 
 def generate_user_name(nickname):
     username = tools.username_requlier(nickname)
-    exist = db.session.query(User).filter(User.username == username).count > 0
+    exist = (db.session.query(User).filter(User.username == username).count() > 0)
     if exist:
         username = username + '_' + str(random.randint(1,11))
     return username
