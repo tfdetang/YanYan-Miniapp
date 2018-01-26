@@ -1,0 +1,64 @@
+/* pages/edit_profile/edit_profile.wxss */
+
+.profile-img-panel {
+  height: 8rem;
+  width: 100%;
+  background-color: #dd6f8c;
+  position: relative;
+}
+
+.camera-logo{
+  color: white;
+  position: absolute;
+  top:70%;
+  left:80%;
+  z-index: 100
+}
+
+.profile-img {
+  position: absolute;
+  top:0%;
+  height: 8rem;
+  width: 100%;
+}
+
+.profile-panel {
+  position: relative;
+  padding: 0.5rem;
+}
+
+.avatar-profile {
+  margin-top: -2.5rem;
+  width: 4rem;
+  height: 4rem;
+  border-radius: 50%;
+  border: 6px solid white;
+}
+
+.zan-btn {
+  font-size: 0.7rem;
+}
+
+.intro {
+  padding: 0.5rem;
+  line-height: 200%;
+}
+
+.intro-textarea {
+  margin-top: 0.5rem;
+  color: black;
+  font-size: 1rem;
+  border-bottom: 1px solid #dd6f8c;
+}
+
+.section{
+  font-size: 1rem;
+  color: gray;
+  width:95%;
+  padding:0.5rem;
+  margin-top:0.5rem
+}
+
+.title{
+  font-size: 0.8rem;
+}

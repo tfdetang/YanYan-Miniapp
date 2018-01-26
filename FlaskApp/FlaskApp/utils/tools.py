@@ -127,4 +127,4 @@ if __name__ == '__main__':
     time = generate_timestamp()
     print(arrow.Arrow.utcfromtimestamp(time).humanize(locale='zh_cn'))
     print(qiniu_token())
-    print(username_requlier('abcc&*中文是可以的—__^%d[]//'))
+    print(match_person('看看能不能@唐大毛 正确的识别@weikunt 人名@杨晨。'))

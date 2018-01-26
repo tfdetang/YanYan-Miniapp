@@ -38,6 +38,7 @@ Page({
       that.setData({
         momentList: res.data.moment_list
       })
+      wx.setStorageSync("moments", res.data.moment_list)
     })
     app.loadChannelList(0).then(res => {
       that.setData({

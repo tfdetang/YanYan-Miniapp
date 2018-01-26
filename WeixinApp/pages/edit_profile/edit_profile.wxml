@@ -1,0 +1,40 @@
+<!--pages/edit_profile/edit_profile.wxml-->
+
+<view class="profile-img-panel">
+  <view class="camera-logo" catchtap="uploadImg">
+    <text class="fa fa-camera-retro fa-2x"></text>
+  </view>
+  <block wx:if="{{profile_img}}">
+    <image src="{{profile_img}}" class="profile-img" mode="aspectFill"></image>
+  </block>
+</view>
+<!--用户信息面板-->
+<view class="zan-row profile-panel">
+  <view class="zan-col zan-col-8">
+    <image class="avatar-profile" src="{{user.avatar}}"></image>
+    <view class="zan-font-bold">{{user.nickname}}</view>
+    <view class="zan-font-16 zan-c-gray-dark">{{'@' + user.username}}</view>
+  </view>
+</view>
+<view class="section">
+  <text class="title fa fa-user"> 自我介绍:</text>
+  <textarea value="{{introValue}}" name="textarea" class="intro-textarea" bindinput="getIntroText" auto-height maxlength="260" cursor-spacing="10" show-confirm-bar="" />
+</view>
+
+<view class="section">
+  <text class="title fa fa-map-marker"> 位置:</text>
+  <picker mode="region" value="{{region}}" bindchange="bindRegionChange">
+    <label class="weui-cell">
+      <text class="zan-font-16 zan-c-black"> {{region}}</text>
+    </label>
+  </picker>
+</view>
+
+<view class="section">
+  <text class="title fa fa-weixin"> 微信:</text>
+  <input class="zan-font-16 zan-c-black" bindinput="getWeixin" value="{{weixinValue}}" placeholder="互相关注后才会显示" />
+</view>
+
+<view class="section">
+<button class="zan-btn zan-btn--primary" bindtap="submit">保存</button>
+</view>

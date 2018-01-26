@@ -11,13 +11,13 @@
   <view class="zan-col zan-col-8">
     <image class="avatar-profile" src="{{user.avatar}}"></image>
     <view class="zan-font-bold">{{user.nickname}}</view>
-    <view class="zan-font-16 zan-c-gray-dark">{{'@' + user.nickname}}</view>
+    <view class="zan-font-16 zan-c-gray-dark">{{'@' + user.username}}</view>
   </view>
   <view wx:if="{{notSelf}}" class="zan-col zan-col-4 zan-col-offset-6" bindtap="toChat">
     <text class="zan-c-blue fa fa-lg fa-envelope-o"></text>
   </view>
   <view class="zan-col zan-col-6 {{notSelf ? '' : 'zan-col-offset-10'}}">
-    <button wx:if="{{notSelf}}" class="zan-btn zan-btn--small {{user.is_following==true ? '' : 'zan-btn--plain'}} zan-btn--primary" catchtap="followButton">{{user.is_following==true ? '正在关注' : '+关注'}}</button>
+    <button wx:if="{{notSelf}}" class="zan-btn zan-btn--small {{user.is_following==true ? '' : 'zan-btn--plain'}} zan-btn--primary" catchtap="followButton">{{user.is_following==true ? '正在关注' : '+关注 '}}</button>
     <button wx:else class="zan-btn zan-btn--small zan-btn--plain zan-font-bold">编辑资料</button>
   </view>
 </view>
@@ -25,8 +25,8 @@
   <text decode="true">{{user.intro}}</text>
 </view>
 <view class="intro zan-row zan-c-gray-dark zan-font-14">
-  <text class="fa fa-map-marker zan-col zan-col-12"> {{user.country + ', '}}{{user.city}}</text>
-  <text class="zan-col zan-col-12 fa fa-weixin" decode="true">&nbsp;{{user.weixin_id==''? '未公开':user.weixin_id}}</text>
+  <text class="fa fa-map-marker zan-col zan-col-23"> {{user.province + ', '}}{{user.city + ', '}}{{user.district}}</text>
+  <text class="zan-col zan-col-23 fa fa-weixin" decode="true">&nbsp;{{user.weixin_id==''? '未公开':user.weixin_id}}</text>
   <view class="zan-col zan-col-8">
     <text class="zan-c-black zan-font-bold" decode="true">{{user.followers}}&nbsp;</text>
     <text>关注者</text>

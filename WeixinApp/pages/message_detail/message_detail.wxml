@@ -1,5 +1,5 @@
 <import src="../../templates/card.wxml" />
-<import src="../../wxParse/wxParse.wxml"/>
+<import src="../../wxParse/wxParse.wxml" />
 
 <view class="container">
   <!-- 显示回复的推文内容 -->
@@ -15,7 +15,9 @@
       </view>
     </view>
     <view style="padding: 1rem;">
-      <view class="zan-font-18 detail-body"><template is="wxParse" data="{{wxParseData:originArticle.nodes}}"/></view>
+      <view class="zan-font-18 detail-body {{origin.type==10? 'zan-text-deleted':''}}">
+        <template is="wxParse" data="{{wxParseData:originArticle.nodes}}" />
+      </view>
       <!-- 图片显示控件 -->
       <view class="zan-row">
         <template is="imgPlacehoder" data="{{ ...origin }}" />
@@ -40,7 +42,9 @@
       </view>
     </view>
     <view style="padding: 1rem;">
-      <view class="zan-font-18 detail-body"><template is="wxParse" data="{{wxParseData:article.nodes}}"/></view>
+      <view class="zan-font-18 detail-body {{message.type==10? 'zan-text-deleted':''}}">
+        <template is="wxParse" data="{{wxParseData:article.nodes}}" />
+      </view>
       <!-- 图片显示控件 -->
       <view class="zan-row">
         <template is="imgPlacehoder" data="{{ ...message }}" />
@@ -54,13 +58,13 @@
             </view>
             <view class="zan-col zan-col-15 quote-inner">
               <view class="zan-font-14  zan-c-gray-dark">@{{message.quoted.username}}</view>
-              <view class="zan-font-14 quote-body zan-c-gray-darker">{{message.quoted.body}}</view>
+              <view class="zan-font-14 quote-body zan-c-gray-darker {{message.quoted.type==10? 'zan-text-deleted':''}}">{{message.quoted.body}}</view>
             </view>
           </block>
           <block wx:else>
             <view class="zan-col zan-col-22 quote-inner">
               <view class="zan-font-14  zan-c-gray-dark">@{{message.quoted.username}}</view>
-              <view class="zan-font-14 quote-body zan-c-gray-darker">{{message.quoted.body}}</view>
+              <view class="zan-font-14 quote-body zan-c-gray-darker {{message.quoted.type==10? 'zan-text-deleted':''}}">{{message.quoted.body}}</view>
             </view>
           </block>
           <view class="zan-row">
@@ -86,17 +90,23 @@
         <text class="nickname zan-font-16">{{message.favo_count}} </text>
         <text class="zan-c-gray-dark zan-font-12">喜爱</text>
       </view>
+      <view wx:if="{{author}}" class="zan-col zan-col-5 zan-pull-right">
+        <text class="fa fa-trash-o zan-c-red" catchtap="delLink"> 删除</text>
+      </view>
     </view>
   </view>
   <!-- 显示操作按钮 -->
   <view class="zan-row icons-bar-detail">
     <view class="zan-col zan-col-4">
       <text decode="true">&nbsp;</text> </view>
-    <view class="icons-bar-big zan-col zan-col-5 fa {{message.is_favoed==true? 'zan-c-red fa-heart':'zan-c-gray-darker fa-heart-o'}}" catchtap="favoMessage">
+    <view class="zan-col zan-col-5">
+      <text class="icons-bar-big fa {{message.is_favoed==true? 'zan-c-red fa-heart':'zan-c-gray-darker fa-heart-o'}}" catchtap="favoMessage"></text>
     </view>
-    <view class="icons-bar-big zan-col zan-col-5 fa {{message.is_comment==true? 'zan-c-blue fa-comments':'zan-c-gray-darker fa-comments-o'}}" catchtap="getFocus" data-message="{{message}}">
+    <view class="zan-col zan-col-5">
+      <text class="icons-bar-big fa {{message.is_comment==true? 'zan-c-blue fa-comments':'zan-c-gray-darker fa-comments-o'}}" catchtap="getFocus" data-message="{{message}}"></text>
     </view>
-    <view class="icons-bar-big zan-col zan-col-5 fa fa-retweet {{message.is_quoted==true? 'zan-c-green':'zan-c-gray-darker'}}" catchtap="retweetButton">
+    <view class="zan-col zan-col-5">
+      <text class="icons-bar-big  fa fa-retweet {{message.is_quoted==true? 'zan-c-green':'zan-c-gray-darker'}}" catchtap="retweetButton"></text>
     </view>
     <view class="icons-bar-big zan-col zan-col-5 zan-c-gray-darker fa fa-envelope-o">
     </view>
@@ -155,7 +165,7 @@
       </block>
     </view>
     <view class="zan-row">
-      <view class="zan-col zan-col-20">
+      <view class="zan-col zan-col-19">
         <!-- 工具栏 -->
         <view class="zan-row reply-tools" hidden="{{toolsHidden}}">
           <view catchtap="uploadImg" class="fa fa-lg fa-picture-o tool-logo zan-col zan-col-5 zan-c-gray-darker"></view>

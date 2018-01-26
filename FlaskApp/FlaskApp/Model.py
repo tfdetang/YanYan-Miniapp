@@ -130,6 +130,7 @@ class User(Base, Utils, db.Model, UserMixin):
     city = Column(String(20))
     province = Column(String(20))
     country = Column(String(20))
+    district = Column(String(20))
     subscribe_time = Column(String(20))
     subscribe_status = Column(Integer)
     profile = relationship('Extra_user_profile',
@@ -169,6 +170,15 @@ class User(Base, Utils, db.Model, UserMixin):
         except:
             return None
 
+    def add_role(self, role_name='user'):
+        role = Role(userid=self.id,
+                    rolename=role_name)
+        role.save()
+        return role
+
+    def is_role(self, role_name):
+        return db.session.query(Role).filter((Role.userid == self.id) & (Role.rolename == role_name)).count() > 0
+
     def generate_login_key(self):
         token = Token(secret=tools.generate_token('30'))
         token.save()
@@ -200,11 +210,7 @@ class User(Base, Utils, db.Model, UserMixin):
                           time=tools.generate_timestamp(),
                           type=7)
             event.save()
-            notify = Notify(user=user_id,
-                            event=event.id,
-                            type=7,
-                            read=0)
-            notify.save()
+            event.generate_notify()
             return self
 
     def unfollow(self, user_id):
@@ -220,11 +226,7 @@ class User(Base, Utils, db.Model, UserMixin):
                           time=tools.generate_timestamp(),
                           type=8)
             event.save()
-            notify = Notify(user=user_id,
-                            event=event.id,
-                            type=8,
-                            read=0)
-            notify.save()
+            event.generate_notify()
             return self
 
     def is_following(self, user_id):
@@ -236,13 +238,15 @@ class User(Base, Utils, db.Model, UserMixin):
             .order_by(Message.time_update.desc())
 
     def followed_event(self):
-        return db.session.query(Event).join(follower, (follower.c.followed_id == Event.sponsor)) \
-            .filter(follower.c.follower_id == self.id).filter(
+        return db.session.query(Event).join(follower, (follower.c.followed_id == Event.sponsor)).join(Message, (
+            Message.id == Event.associate_message)) \
+            .filter(follower.c.follower_id == self.id).filter(Message.type != 10).filter(
             (Event.type == 1) | (Event.type == 2) | ((Event.type == 4) & (Event.sponsor != self.id)) | (
                 (Event.type == 5) & (Event.sponsor != self.id)) | ((Event.type == 7) & (Event.sponsor != self.id)))
 
     def self_event(self):
-        return db.session.query(Event).filter(Event.sponsor == self.id)
+        return db.session.query(Event).join(Message, (Message.id == Event.associate_message)).filter(
+            Message.type != 10).filter(Event.sponsor == self.id)
 
     def self_photos(self):
         return db.session.query(Image).filter(Image.uploader == self.id)
@@ -252,6 +256,7 @@ class User(Base, Utils, db.Model, UserMixin):
 
     def post_message(self, body, type=0):
         channels = tools.match_channel(body + ' ')
+        usernames = tools.match_person(body + ' ')
         body = body[:260]
         time = tools.generate_timestamp()
         message = Message(body=body,
@@ -264,6 +269,8 @@ class User(Base, Utils, db.Model, UserMixin):
         message.save()
         for i in channels:
             message.add_channel(i[1:-1])
+        for i in usernames:
+            message.at_user(i[1:-1])
         return message
 
     def create_message(self, body):
@@ -290,11 +297,7 @@ class User(Base, Utils, db.Model, UserMixin):
                       associate_user=commented_message.author_id,
                       type=3)
         event.save()
-        notify = Notify(user=commented_message.author_id,
-                        event=event.id,
-                        type=3,
-                        read=0)
-        notify.save()
+        event.generate_notify()
         self.update()
         return message
 
@@ -323,11 +326,7 @@ class User(Base, Utils, db.Model, UserMixin):
                           associate_user=quoted_message.author_id,
                           type=type)
         event.save()
-        notify = Notify(user=quoted_message.author_id,
-                        event=event.id,
-                        type=type,
-                        read=0)
-        notify.save()
+        event.generate_notify()
         quoted_message.update()
         self.update()
         return event
@@ -352,18 +351,19 @@ class User(Base, Utils, db.Model, UserMixin):
                           associate_user=message.author_id,
                           type=5)
             event.save()
-            notify = Notify(user=message.author_id,
-                            event=event.id,
-                            type=5,
-                            read=0)
-            notify.save()
+            event.generate_notify()
             return self
 
     def unfavo_message(self, message_id):
         if self.is_favoed_message(message_id):
             message = db.session.query(Message).filter(Message.id == message_id).one()
             self.favo_messages.remove(message)
-            self.update()
+            events = db.session.query(Event).filter(
+                (Event.type == 5) & (Event.sponsor == self.id) & (Event.associate_message == message_id)).all()
+            for i in events:
+                i.type = 10
+                i.time = tools.generate_timestamp()
+            db.session.commit()
             return self
 
     def send_private_message(self, body, send_id):
@@ -378,11 +378,7 @@ class User(Base, Utils, db.Model, UserMixin):
                       associate_user=send_id,
                       type=6)
         event.save()
-        notify = Notify(user=send_id,
-                        event=event.id,
-                        type=6,
-                        read=0)
-        notify.save()
+        event.generate_notify()
         return event
 
     def get_chat_history(self, userid):
@@ -407,9 +403,9 @@ class User(Base, Utils, db.Model, UserMixin):
             chat[str(i[0])] = i[1]
 
         for j in send_list:
-            if chat[str(j[0])]:
+            try:
                 chat[str(j[0])] = max(chat[str(j[0])], j[1])
-            else:
+            except:
                 chat[str(j[0])] = j[1]
         return chat
 
@@ -431,7 +427,7 @@ class Event(Base, db.Model, Utils):
     associate_user： 关联的用户
     time：业务发起时间
     type: 业务类型：1: 发送Message 2: 转发&评论Message 3: 评论Message 4：转发Message 5: 喜欢Message
-                   6: 私信 7: 关注用户 8： 取消关注 9：@用户
+                   6: 私信 7: 关注用户 8： 取消关注 9：@用户 10: 取消喜欢Message
     remarks: 业务备注
     '''
     __tablename__ = 'event'
@@ -455,33 +451,16 @@ class Event(Base, db.Model, Utils):
     def get_associateuser(self):
         return db.session.query(User).filter(User.id == self.associate_user).one()
 
+    def generate_notify(self):
+        notify = Notify(user=self.associate_user,
+                        event=self.id,
+                        type=self.type,
+                        read=0)
+        notify.save()
+        return notify
+
     def __repr__(self):
         return '<Event %s>' % self.id
-
-
-class Notify(Base, db.Model, Utils):
-    '''
-    id: 通知流水号
-    user: 所通知用户的id
-    event: 所对应的事件
-    type: 事件的类型（同event）
-    read: 是否已读（0 未读，1 已读）
-    '''
-    __tablename__ = 'notify'
-
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    user = Column(ForeignKey('user.id'))
-    event = Column(ForeignKey('event.id'))
-    type = Column(Integer)
-    read = Column(Integer)
-
-    def read_notify(self):
-        self.read = 1
-        self.update()
-        return self
-
-    def __repr__(self):
-        return '<Notification %s>' % self.id
 
 
 class Channel(Base, db.Model, Utils):
@@ -520,6 +499,17 @@ class Channel(Base, db.Model, Utils):
 
 
 class Message(Base, db.Model, Utils):
+    '''
+    id: Message流水号
+    body: Message正文
+    time_create: 创建时间
+    time_update: 修改时间
+    comment_count: 评论数量
+    quote_count: 引用数量
+    author_id: 创建者
+    quote_id: 引用的推文id
+    type:  Message的类型：0 普通Message, 1 回复Message, 2 回复&转发Message，3 转发Message, 4 私信Message, 10 被用户删除
+    '''
     __tablename__ = 'message'
     __searchable__ = ['body']
     __analyzer__ = ChineseAnalyzer()
@@ -531,8 +521,8 @@ class Message(Base, db.Model, Utils):
     comment_count = Column(Integer)
     quote_count = Column(Integer)
     author_id = Column(ForeignKey('user.id'))
-    quote_id = Column(Integer)  # 引用Message的id
-    type = Column(Integer)  # Message的类型：0 普通Message, 1 回复Message, 2 回复&转发Message，3 转发Message, 4 私信Message
+    quote_id = Column(Integer)
+    type = Column(Integer)
     channels = relationship('Channel',
                             secondary='channel_2_message',
                             backref='c_message',
@@ -540,7 +530,7 @@ class Message(Base, db.Model, Utils):
     images = relationship('Image',
                           backref='img_Message',
                           lazy='dynamic')
-    favo_users = relationship('Message',
+    favo_users = relationship('User',
                               secondary=message_favo,
                               lazy='dynamic')
 
@@ -563,6 +553,19 @@ class Message(Base, db.Model, Utils):
         self.channels.append(channel)
         self.save()
         return self
+
+    def at_user(self, username):
+        try:
+            user = db.session.query(User).filter(User.username == username).one()
+        except:
+            return False
+        event = Event(sponsor=self.author_id,
+                      associate_message=self.id,
+                      associate_user=user.id,
+                      time=tools.generate_timestamp(),
+                      type=9)
+        event.save()
+        return event.generate_notify()
 
     def add_images(self, img_url):
         if self.images.count() < 5:
@@ -589,6 +592,42 @@ class Moment(Base, db.Model, Utils):
 
 
 # ----------------------------------------------Additional_obj-------------------------
+
+class Notify(Base, db.Model, Utils):
+    '''
+    id: 通知流水号
+    user: 所通知用户的id
+    event: 所对应的事件
+    type: 事件的类型（同event）
+    read: 是否已读（0 未读，1 已读）
+    '''
+    __tablename__ = 'notify'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user = Column(ForeignKey('user.id'))
+    event = Column(ForeignKey('event.id'))
+    type = Column(Integer)
+    read = Column(Integer)
+
+    def read_notify(self):
+        self.read = 1
+        self.update()
+        return self
+
+    def __repr__(self):
+        return '<Notification %s>' % self.id
+
+
+class Role(Base, Utils, db.Model):
+    __tablename__ = 'role'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    userid = Column(Integer)
+    rolename = Column(String(20))
+
+    def __repr__(self):
+        return '<Role %s>' % self.id
+
 
 class Extra_user_profile(Base, db.Model, Utils):
     __tablename__ = 'extra_user_profile'
@@ -623,6 +662,12 @@ class Image(Base, db.Model, Utils):
         return '<Image %s>' % self.id
 
 
+# ---------------------------------------------简历搜索index--------------------------
+
+whooshalchemy.whoosh_index(app, User)
+whooshalchemy.whoosh_index(app, Message)
+whooshalchemy.whoosh_index(app, Channel)
+
 # ---------------------------------test-----------------------------------------------
 if __name__ == '__main__':
 
@@ -638,45 +683,29 @@ if __name__ == '__main__':
     Base.metadata.create_all(engine)
 
     with app.app_context():
+        user1 = db.session.query(User).filter(User.id == 1).one()
         user2 = db.session.query(User).filter(User.id == 2).one()
         user3 = db.session.query(User).filter(User.id == 3).one()
         user4 = db.session.query(User).filter(User.id == 4).one()
-        message5 = db.session.query(Message).filter(Message.id == 5).one()
-        message7 = db.session.query(Message).filter(Message.id == 7).one()
-        channel = db.session.query(Channel).filter(Channel.id == 2).one()
-        # events = user1.followed_event().offset(0).limit(10).all()
-        # user1.set_profile()
-        # user2.set_profile()
-        # message7.add_images('msg_img_WrxKYo05sp')
-        # user4.create_message('#测试主题4# 进行主题功能的测试')
-        # user3.send_private_message('测试列表排序', 2)
+        user5 = db.session.query(User).filter(User.id == 5).one()
+        user6 = db.session.query(User).filter(User.id == 6).one()
 
+        user1.add_role()
+        user1.add_role('admin')
+        user2.add_role()
+        user3.add_role()
+        user4.add_role()
+        user5.add_role()
+        user6.add_role()
 
-        # print(user2.get_chat_history(4).all())
-        # user2.quote_message(body='', quoted_id=2)
-        # user4.quote_message(body='多来测试一下消息提醒功能', quoted_id=7)
-        # user2.comment_message('测试评论的显示，这是第一条评论', 13)
-        # user3.comment_message('这是第二条评论', 13)
-        # print(user2.is_quoted_message(2))
-        # user3.create_message('2张图片显示。')
+        print(user1.is_role('admin'))
 
-        # print(user1.self_event().order_by(Event.id.desc()).filter((Event.type == 2) | (Event.type == 3)).limit(10).all())
-
-        print(channel.most_comment_message().first())
-
-        # user2.favo_message(1)
+        '''
         print(user2.is_favoed_message(1))
         print(user2.get_chat_list().keys(), user2.get_chat_list().values())
         print(user2.get_chat_unread(4).all())
-        # user4.follow(user2.id)
+
         authors = db.session.query(Message.author_id, func.count(Message.author_id)).filter(Message.type != 4).group_by(Message.author_id).order_by(
             func.count(Message.author_id).desc())
         print(authors.all())
-        # print(messages.all())
-        # message = db.session.query(Message).filter(Message.id == 8).one()
-        # print(message.favo_users.count())
-        # user2.quote_message('我们来测试一下转发 是否能正常生效',1)
-        # user2.quote_message('', 1)
-        # user2.comment_message('文字评论显示', 8)
-        # query = user2.followed_message().order_by(Message.time_create.desc())
-        # query = db.session.query(Message).filter(Message.author_id == user1.id).order_by(Message.time_update.desc())
+        '''

@@ -5,6 +5,7 @@ const app = getApp()
 
 Page({
   data: {
+    author: false,
     isHideLoadMore: true,
     focus: false,
     retweetCheck: false,
@@ -29,6 +30,11 @@ Page({
         focus: option.focus,
         retweetCheck: option.retweetCheck,
       })
+      if (res.data.author_id == wx.getStorageSync('userinfo').user_id){
+        that.setData({
+          author: true
+        })
+      }
       var article = that.data.message.body
       WxParse.wxParse('article', 'html', article, that, 5);
       if (res.data.quoted) {
@@ -330,16 +336,37 @@ Page({
       that.setData(params)
     })
   },
+  
+  delLink: function (event) {
+    var that = this
+    wx.showModal({
+      title: '提示',
+      content: '您确定要将这条推文删除吗(该操作不可撤销)？',
+      success: function (res) {
+        if (res.confirm) {
+          app.delMessage(that.data.message.id).then(res => {
+            wx.showToast({
+              title: '已删除推文',
+              mask: true,
+              duration: 1000
+            })            
+          })
+        } else if (res.cancel) {
+          console.log('用户点击取消')
+        }
+      }
+    })
+  },
 
   wxParseTagATap: function (e) {
     var href = e.currentTarget.dataset.src;
     //我们可以在这里进行一些路由处理
     if (href.length > 0) {
-      if(href[0] == '#'){
+      if (href[0] == '#') {
         wx.navigateTo({
           url: '../channel_message/channel_message?channelname=' + href.substring(1),
         })
-      }else if(href[0] == '@'){
+      } else if (href[0] == '@') {
         wx.navigateTo({
           url: '../users/users?userid=' + href.substring(1),
         })

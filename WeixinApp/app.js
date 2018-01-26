@@ -23,8 +23,9 @@ App({
     wxLogin().then(res => {
       wx.setStorageSync('code', res.code)
       var wxGetUserInfo = util.wxGetUserInfo()
-      return wxGetUserInfo()
+      return wxGetUserInfo({ lang:'zh_CN'})
     }).then(res => {
+      console.log(res.userInfo)
       var code = wx.getStorageSync('code')
       var url = config.getHostUrl() + 'login/wechat/'
       var data = {
@@ -57,6 +58,21 @@ App({
       userid: userId
     }
     return util.getRequest(url, data)
+  },
+
+  editUser: function (intro, province, city, district, weixin,image){
+    var that = this
+    var url = config.getHostUrl() + 'user/self/'
+    var data = {
+      login_key: wx.getStorageSync('userKey').login_key,
+      intro:intro,
+      province: province,
+      city: city,
+      district: district,
+      weixin: weixin,
+      image: image
+    }
+    return util.postRequest(url, data)
   },
 
   getActiveUsers: function (method) {
@@ -128,6 +144,16 @@ App({
       message_id: messageId
     }
     return util.getRequest(url, data)
+  },
+
+  delMessage: function (messageId) {
+    var that = this
+    var url = config.getHostUrl() + 'message/del/'
+    var data = {
+      login_key: wx.getStorageSync('userKey').login_key,
+      message_id: messageId
+    }
+    return util.postRequest(url, data)
   },
 
   loadMessage: function (messageId) { // 单独载入某条信息

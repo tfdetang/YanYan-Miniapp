@@ -10,7 +10,7 @@
       </view>
       <view class="zan-col zan-col-15 quote-inner">
         <view class="zan-font-12  zan-c-gray-dark">@{{quoted.username}}</view>
-        <view class="zan-font-12 quote-body zan-c-gray-darker">{{quoted.body}}</view>
+        <view class="zan-font-12 quote-body zan-c-gray-darker {{quoted.type==10? 'zan-text-deleted':''}}">{{quoted.body}}</view>
       </view>
       <view class="zan-col zan-col-1">
         <view class="zan-arrow quote-arrow"></view>
@@ -19,7 +19,7 @@
     <block wx:else>
       <view class="zan-col zan-col-23 quote-inner">
         <view class="zan-font-12  zan-c-gray-dark">@{{quoted.username}}</view>
-        <view class="zan-font-12 quote-body zan-c-gray-darker">{{quoted.body}}</view>
+        <view class="zan-font-12 quote-body zan-c-gray-darker {{quoted.type==10? 'zan-text-deleted':''}}">{{quoted.body}}</view>
       </view>
       <view class="zan-col zan-col-1">
         <view class="zan-arrow quote-arrow"></view>
@@ -32,7 +32,7 @@
 <template name="imgPlacehoder">
   <block wx:for="{{images}}" wx:for-item="image">
     <image wx:if="{{images.length==1}}" class="zan-col zan-col-22 single-image" mode="aspectFill" src="{{image}}" catchtap="previewImage" data-current="{{image}}" data-all="{{images}}" lazy-load="{{true}}"></image>
-    <image wx:else class="zan-col zan-col-11 message-list-images" mode="aspectFill" src="{{image}}" catchtap="previewImage" data-current="{{image}}" data-all="{{images}}" lazy-load="{{true}}"></image>
+    <image wx:else class="zan-col zan-col-11 message-list-images" mode="aspectFill" src="{{image}}" catchtap="previewImage" data-current="{{image}}" data-all="{{images}}"></image>
   </block>
 </template>
 
@@ -154,7 +154,7 @@
           <text class="zan-font-16 zan-font-bold" catchtap="toUser" data-userid="{{item.author_id}}">{{item.nickname}}</text>
           <text class="zan-font-16" wx:if="{{item.type == 3}}" decode="true"> &nbsp;回复到:</text>
           <text class="zan-font-12 zan-c-gray-dark zan-pull-right" decode='true'> &nbsp; {{item.time}}</text>
-          <view class="zan-font-16 zan-c-gray-darker">{{item.body}}</view>
+          <view class="zan-font-16 zan-c-gray-darker {{item.type==10? 'zan-text-deleted':''}}">{{item.body}}</view>
           <!-- 图片显示控件 -->
           <view class='zan-row' style="padding-top:0.5rem">
             <template is="imgPlacehoder" data="{{ ...item }}" />

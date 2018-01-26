@@ -10,6 +10,7 @@
     "pages/notify/notify",
     "pages/chat/chat",
     "pages/channel_message/channel_message",
+    "pages/edit_profile/edit_profile",
     "pages/moment/moment"
   ],
   "window": {

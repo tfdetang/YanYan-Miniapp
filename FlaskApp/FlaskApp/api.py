@@ -85,6 +85,7 @@ def user_2_dict(user):
                      username=user.username,
                      city=user.city,
                      province=user.province,
+                     district=user.district,
                      country=user.country,
                      intro=user.get_profile().intro,
                      profile_img="{}/{}".format(app.config['BASE_URL'], user.get_profile().profile_img),
@@ -104,7 +105,9 @@ def notify_2_dict(notifies):
                    '4': '转发了推文',
                    '5': '喜欢了推文',
                    '7': '关注了你',
-                   '9': '提及了你'}
+                   '8': '对你取消了关注',
+                   '9': '提及了你',
+                   '10': '取消了喜欢'}
     notify_list = []
     for i in notifies:
         event = i.notified_event
@@ -117,7 +120,7 @@ def notify_2_dict(notifies):
                            type=event.type,
                            read=i.read,
                            id=i.id)
-        if event.type != 7:
+        if (event.type != 7) and (event.type != 8):
             message = event.get_message()
             notify_dict['body'] = message.body,
             notify_dict['message_id'] = message.id,
@@ -178,6 +181,30 @@ def current_user_info():
     return jsonify(user_info)
 
 
+@app.route('/user/self/', methods=['POST'])
+@login_required
+def edit_user_info():
+    intro = request.form.get('intro', '')
+    province = request.form.get('province', '')
+    city = request.form.get('city', '')
+    district = request.form.get('district', '')
+    profile_img = request.form.get('image', '')
+    weixin_id = request.form.get('weixin', '')
+    user = g.user
+    profile = user.get_profile()
+    user.province = province
+    user.city = city
+    user.district = district
+    profile.intro = intro
+    profile.weixin_id = weixin_id
+    if profile_img:
+        profile.profile_img = profile_img
+    db.session.commit()
+    user_info = user_2_dict(user)
+    return jsonify(user_info)
+
+
+
 @app.route('/user/info/', methods=['GET'])
 @login_required
 def get_user_info():
@@ -200,14 +227,17 @@ def get_events_byid(userid):
     user = load_user_by_id(int(userid))
     if type == 'post':
         query = user.self_event().filter(Event.type == 1)
+        query = query.order_by(Event.id.desc())
+        events = query.offset(int(start)).limit(limit).all()
+        message_list = events_2_dict(events)
     elif type == 'comment':
         query = user.self_event().filter((Event.type == 2) | (Event.type == 3) | (Event.type == 4))
+        query = query.order_by(Event.id.desc())
+        events = query.offset(int(start)).limit(limit).all()
+        message_list = events_2_dict(events)
     else:
-        query = user.self_event().filter((Event.type == 5))
-
-    query = query.order_by(Event.id.desc())
-    events = query.offset(int(start)).limit(limit).all()
-    message_list = events_2_dict(events)
+        messages = user.favo_messages[int(start): int(start)+limit]
+        message_list = messages_2_list(messages)
     result = dict(num=len(message_list),
                   message_list=message_list)
     return jsonify(result)
@@ -343,19 +373,39 @@ def message_2_dict(i, login=True, constract=False):
                    nickname=user.nickname,
                    username=user.username,
                    avatar=app.config['BASE_URL'] + '/avatar_' + str(i.author_id))
-    if constract:
-        message['body'] = constract_message(i.body)
-    else:
-        message['body'] = i.body
     if login:
         message['is_favoed'] = g.user.is_favoed_message(i.id)
         message['is_quoted'] = g.user.is_quoted_message(i.id)
         message['is_comment'] = g.user.is_commented_message(i.id)
-    if i.images.count() > 0:
-        for j in i.images:
-            images.append(j.full_url())
+
+    if message['type'] == 10:
+        message['body'] = '该推文已被作者删除'
+    else:
+        if constract:
+            message['body'] = constract_message(i.body)
+        else:
+            message['body'] = i.body
+        if i.images.count() > 0:
+            for j in i.images:
+                images.append(j.full_url())
     message['images'] = images
     return message
+
+
+def messages_2_list(messages, login=True, constract=False):
+    message_list = []
+    for i in messages:
+        message = message_2_dict(i, login, constract)
+        message['time'] = tools.timestamp_2_zh(i.time_create)
+        if i.type == 0:
+            message['type'] = 1
+        elif i.type == 1:
+            message['type'] = 3
+        elif i.type == 2:
+            message['type'] = 2
+            message['quoted'] = message_2_dict(i.get_quoted_message(), login, constract)
+        message_list.append(message)
+    return message_list
 
 
 def events_2_dict(events):
@@ -422,18 +472,7 @@ def get_messages_list():
     channel_name = request.args.get('channel', '')
     limit = 10
     channel = db.session.query(Channel).filter(Channel.name == channel_name).one()
-    message_list = []
-    for i in channel.messages[int(start):int(start)+limit]:
-        message = message_2_dict(i)
-        message['time'] = tools.timestamp_2_zh(i.time_create)
-        if i.type == 0:
-            message['type'] = 1
-        elif i.type == 1:
-            message['type'] = 3
-        elif i.type == 2:
-            message['type'] = 2
-            message['quoted'] = message_2_dict(i.get_quoted_message())
-        message_list.append(message)
+    message_list = messages_2_list(channel.messages[int(start):int(start)+limit])
     result = dict(num=len(message_list),
                   message_list=message_list[::-1])
     return jsonify(result)
@@ -443,7 +482,7 @@ def get_messages_list():
 def get_message(id):
     message = db.session.query(Message).filter(Message.id == id).one()
     message_dict = message_2_dict(message, constract=True)
-    if message.type != 0:
+    if (message.type == 1) or (message.type == 2):
         quoted = db.session.query(Message).filter(Message.id == message.quote_id).one()
         message_dict['quoted'] = message_2_dict(quoted)
     return jsonify(message_dict)
@@ -540,6 +579,21 @@ def generate_upload_token():
     return jsonify({'uptoken': token})
 
 
+@app.route('/message/del/', methods=['POST'])
+@login_required
+def del_message():
+    message_id = request.form.get('message_id', '0')
+    try:
+        message = db.session.query(Message).filter(Message.id == message_id).one()
+    except:
+        return jsonify({'error': 'wrong_message_id'})
+    if message.author_id == g.user.id:
+        message.type = 10
+        message.update()
+    else:
+        return jsonify({'error': 'Permission denied'})
+
+
 @app.route('/message/favo/', methods=['GET', 'POST'])
 @login_required
 def favo_message():
@@ -605,7 +659,7 @@ def add_img():
         message.add_images(url)
         return jsonify({'status': 'success', 'messageId': message.id})
     else:
-        return jsonify({'error': 'no_permission'})
+        return jsonify({'error': 'Permission denied'})
 
 
 @app.route('/user/notifies/read/', methods=['POST'])
@@ -620,4 +674,4 @@ def read_notify():
         notify.read_notify()
         return jsonify({'status': 'success', 'read': 1})
     else:
-        return jsonify({'error': 'no_permmission'})
+        return jsonify({'error': 'Permission denied'})
