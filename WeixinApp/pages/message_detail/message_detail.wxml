@@ -1,5 +1,6 @@
 <import src="../../templates/card.wxml" />
 <import src="../../wxParse/wxParse.wxml" />
+<import src="../../dist/loadmore/index.wxml" />
 
 <view class="container">
   <!-- 显示回复的推文内容 -->
@@ -125,14 +126,15 @@
           <text class="zan-font-14 zan-font-bold zan-c-gray-darker" catchtap="toUser" data-userid="{{reply.author_id}}"> {{reply.nickname}} </text>
           <text wx:if="{{reply.type == 2}}" class="zan-c-blue fa fa-retweet"></text>
           <text class="zan-font-12 zan-c-gray-dark zan-pull-right" decode="true"> &nbsp; {{reply.time_update}}</text>
-          <view class="zan-font-14 detail-body">{{reply.body}}</view>
+          <view class="zan-font-14 detail-body {{reply.type==10? 'zan-text-deleted':''}}">{{reply.body}}</view>
           <!-- 显示回复的图片-->
           <view class="zan-row">
             <template is="imgPlacehoder" data="{{ ...reply }}" />
           </view>
           <!-- 显示回复的回复-->
           <view class="zan-font-12 zan-c-gray-dark zan-row reply" wx:for="{{reply.reply}}" wx:for-item="reply_">
-            {{reply_.nickname}}: {{reply_.body}}
+            {{reply_.nickname}}:
+            <text class="{{reply_.type==10? 'zan-text-deleted':''}}">{{reply_.body}}</text>
           </view>
           <view class="zan-row" style="padding-top:0.4rem">
             <view class="icons-bar zan-col zan-col-4 zan-col-offset-17 fa {{reply.is_comment==true? 'zan-c-gray-dark fa-comments':'zan-c-gray fa-comments-o'}}" catchtap="getFocus" data-message="{{reply}}">
@@ -146,10 +148,9 @@
       </view>
     </view>
   </view>
-  <view class="weui-loadmore" hidden="{{isHideLoadMore}}">
-    <view class="weui-loading"></view>
-    <view class="weui-loadmore__tips">正在加载</view>
-  </view>
+  <block wx:if="{{!isHideLoadMore}}">
+    <template is="zan-loadmore" data="{{ loading: true }}" />
+  </block>
   <!-- 回复框 -->
   <view class="reply-input" style="padding:0.5rem">
     <!-- 图片上传占位 -->
@@ -169,17 +170,40 @@
         <!-- 工具栏 -->
         <view class="zan-row reply-tools" hidden="{{toolsHidden}}">
           <view catchtap="uploadImg" class="fa fa-lg fa-picture-o tool-logo zan-col zan-col-5 zan-c-gray-darker"></view>
-          <view class="fa fa-lg fa-at tool-logo zan-col zan-col-5 zan-c-gray-darker"></view>
+          <view class="fa fa-lg fa-at tool-logo zan-col zan-col-5 zan-c-gray-darker" catchtap="search" data-method="user"></view>
+          <view class="fa fa-lg fa-hashtag tool-logo zan-col zan-col-5 zan-c-gray-darker" catchtap="search" data-method="channel"></view>
           <checkbox-group bindchange="checkBox" class="tool-logo zan-col zan-col-5 zan-col-offset6 zan-font-12 zan-pull-right">
             <checkbox value="retweet" checked="{{retweetCheck}}">转发</checkbox>
           </checkbox-group>
         </view>
         <!-- 回复输入框 -->
-        <textarea value="{{replyValue}}" fixed="true" name="textarea" bindfocus="showTools" bindinput="getText" class="reply-textarea zan-c-gray-darker zan-font-16" focus="{{focus}}" auto-height="true" maxlength="260" cursor-spacing="15" show-confirm-bar="" placeholder="回复给@{{replyTo.username}}"
+        <textarea value="{{textValue}}" fixed="true" name="textarea" bindfocus="showTools" bindinput="getText" class="reply-textarea zan-c-gray-darker zan-font-16" focus="{{focus}}" auto-height="true" maxlength="260" cursor-spacing="15" show-confirm-bar="" placeholder="回复给@{{replyTo.username}}"
         />
       </view>
       <view class="zan-col zan-col-4">
         <button class="zan-btn zan-btn--small zan-btn--primary" bindtap="replySubmit">回复</button>
+      </view>
+    </view>
+  </view>
+  <!-- 顶部搜索栏 -->
+  <view class="popup-example--top zan-popup {{ showTopPopup ? 'zan-popup--show' : ''}}">
+    <view class="zan-popup__mask" catchtap="toggleTopPopup"></view>
+    <view class="zan-popup__container">
+      <input placeholder='这里搜索' value="{{searchValue}}" focus='{{searchFocus}}' bindinput="searchInput"></input>
+      <text>搜索结果：</text>
+      <view wx:for="{{searchList}}" class="zan-row search-item">
+        <view wx:if="{{searchMethod=='user'}}" class="zan-row" catchtap="pasteName" data-name="{{item.username}}">
+          <view class="zan-col zan-col-3">
+            <image class="avatar-small" src="{{item.avatar}}" />
+          </view>
+          <text class="zan-col zan-col-20 zan-font-16"> @{{item.username}}</text>
+        </view>
+        <view wx:else class="zan-row" catchtap="pasteName" data-name="{{item.name}}">
+          <view class="zan-col zan-col-3">
+            <text class="fa fa-lg fa-hashtag"></text>
+          </view>
+          <text class="zan-col zan-col-20 zan-font-16"> {{item.name}}</text>
+        </view>
       </view>
     </view>
   </view>

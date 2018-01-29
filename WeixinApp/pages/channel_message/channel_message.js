@@ -9,6 +9,7 @@ Page({
     channelName: "",
     messageList: [],
     isHideLoadMore: true,
+    isNoMore: false,
   },
 
 
@@ -143,6 +144,9 @@ Page({
         isHideLoadMore: true
       })
       if (get_list.length == 0) {
+        that.setData({
+          isNoMore: true
+        })
         wx.showToast({
           title: '已经到底了',
           duration: 800

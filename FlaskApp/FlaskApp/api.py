@@ -80,20 +80,21 @@ def login_wechat():
 
 # --------------------------------------------用户相关接口----------------------------------------
 
-def user_2_dict(user):
+def user_2_dict(user, simple=False):
     user_info = dict(nickname=user.nickname,
                      username=user.username,
-                     city=user.city,
-                     province=user.province,
-                     district=user.district,
-                     country=user.country,
-                     intro=user.get_profile().intro,
-                     profile_img="{}/{}".format(app.config['BASE_URL'], user.get_profile().profile_img),
-                     weixin_id=user.get_profile().weixin_id,
                      user_id=user.id,
+                     intro = user.get_profile().intro,
                      followers=user.followers.count(),
                      followed_users=user.followed.count(),
-                     avatar="{}/avatar_{}".format(app.config['BASE_URL'], user.id))
+                     avatar="{}avatar_{}".format(app.config['BASE_URL'], user.id))
+    if not simple:
+        user_info['city'] = user.city
+        user_info['province'] = user.province
+        user_info['district'] = user.district
+        user_info['country'] = user.country
+        user_info['profile_img'] = "{}{}".format(app.config['BASE_URL'], user.get_profile().profile_img)
+        user_info['weixin_id'] = user.get_profile().weixin_id
     user_info['errMsg'] = error_code['4000']
     user_info['errCode'] = '4000'
     return user_info
@@ -115,7 +116,7 @@ def notify_2_dict(notifies):
         notify_dict = dict(nickname=sponsor.nickname,
                            user_id=sponsor.id,
                            time=tools.timestamp_2_zh(event.time),
-                           avatar="{}/avatar_{}".format(app.config['BASE_URL'], sponsor.id),
+                           avatar="{}avatar_{}".format(app.config['BASE_URL'], sponsor.id),
                            operation=notify_type[str(event.type)],
                            type=event.type,
                            read=i.read,
@@ -165,7 +166,7 @@ def user_list():
     for i in authors:
         author = db.session.query(User).filter(User.id == i[0]).one()
         author_dict = dict(user_id=author.id,
-                           avatar="{}/avatar_{}".format(app.config['BASE_URL'], author.id),
+                           avatar="{}avatar_{}".format(app.config['BASE_URL'], author.id),
                            nickname=author.nickname)
         author_list.append(author_dict)
     result = dict(num=len(author_list),
@@ -324,7 +325,7 @@ def get_chat_list():
                          user_id=i,
                          user_nickname=user.nickname,
                          user_username=user.username,
-                         user_avatar="{}/avatar_{}".format(app.config['BASE_URL'], i),
+                         user_avatar="{}avatar_{}".format(app.config['BASE_URL'], i),
                          unread=unread)
         chat_list.append(chat_dict)
     chat_list.sort(key=lambda x: x['event_id'], reverse=True)
@@ -372,7 +373,7 @@ def message_2_dict(i, login=True, constract=False):
                    author_id=i.author_id,
                    nickname=user.nickname,
                    username=user.username,
-                   avatar=app.config['BASE_URL'] + '/avatar_' + str(i.author_id))
+                   avatar=app.config['BASE_URL'] + 'avatar_' + str(i.author_id))
     if login:
         message['is_favoed'] = g.user.is_favoed_message(i.id)
         message['is_quoted'] = g.user.is_quoted_message(i.id)
@@ -457,7 +458,7 @@ def photo_2_dict(photos):
         for i in photos:
             photodict = dict(uploader=i.uploader,
                              uploade_time=tools.timestamp_2_str(i.uploade_time),
-                             url=app.config['BASE_URL'] + '/' + i.url,
+                             url=app.config['BASE_URL'] + i.url,
                              relate_message=i.relate_message)
             relate_message = db.session.query(Message).filter(Message.id == i.relate_message).one()
             photodict['caption'] = relate_message.body
@@ -569,6 +570,52 @@ def get_channels():
                   channel_list=channel_list)
     return jsonify(result)
 
+
+# --------------------------------------搜索相关接口---------------------------------
+
+@app.route('/search/user/', methods=['GET'])
+def search_user():
+    username = request.args.get('username', '')
+    limit = int(request.args.get('limit', '6'))
+    start = int(request.args.get('start', '0'))
+    find_users = User.query.filter(User.username.contains(username)).offset(start).limit(limit).all()
+    users = []
+    for i in find_users:
+        user = user_2_dict(i, simple=True)
+        users.append(user)
+    result = dict(num=len(users),
+                  user_list=users)
+    return jsonify(result)
+
+
+@app.route('/search/channel/', methods=['GET'])
+def search_channel():
+    channel_name = request.args.get('channel', '')
+    limit = int(request.args.get('limit', '6'))
+    start = int(request.args.get('start', '0'))
+    find_channels = Channel.query.whoosh_search(channel_name).offset(start).limit(limit).all()
+    channels = []
+    for i in find_channels:
+        channel = dict(name=i.name,
+                       id=i.id)
+        channels.append(channel)
+    result = dict(num=len(channels),
+                  channel_list=channels)
+    return jsonify(result)
+
+
+@app.route('/search/message/', methods=['GET'])
+def search_message():
+    body= request.args.get('body', '')
+    limit = int(request.args.get('limit', '4'))
+    start = int(request.args.get('start', '0'))
+    find_message = Message.query.whoosh_search(body).limit(limit).all()
+    message_list = []
+    if find_message:
+        message_list = messages_2_list(find_message, login=False)
+    result = dict(num=len(message_list),
+                  message_list=message_list[::-1])
+    return jsonify(result)
 
 # ---------------------------------------推文操作相关接口-----------------------------
 

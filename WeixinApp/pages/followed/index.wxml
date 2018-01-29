@@ -1,4 +1,5 @@
 <import src="../../templates/card.wxml" />
+<import src="../../dist/loadmore/index.wxml" />
 
 <!--index.wxml-->
 <view class="container">
@@ -7,8 +8,10 @@
   </view>
   <template is="messageCard" data="{{ message_list:message_list,listName:'message_list'}}" />
   <!-- 用来显示底部加载动画 -->
-  <view class="weui-loadmore" hidden="{{isHideLoadMore}}">
-    <view class="weui-loading"></view>
-    <view class="weui-loadmore__tips">正在加载</view>
-  </view>
+  <block wx:if="{{!isHideLoadMore}}">
+    <template is="zan-loadmore" data="{{ loading: true }}"/>
+  </block>
+  <block wx:if="{{isNoMore}}">
+    <template is="zan-loadmore" data="{{ nomore: true }}"/>
+  </block>
 </view>

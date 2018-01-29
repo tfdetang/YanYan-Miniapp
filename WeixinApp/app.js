@@ -293,5 +293,23 @@ App({
         params
       );
     }
+  },
+
+  searchUsers: function (username) {
+    var that = this
+    var url = config.getHostUrl() + 'search/user/'
+    var data = {
+      username: username
+    }
+    return util.getRequest(url, data)
+  },
+
+  searchChannels: function (name) {
+    var that = this
+    var url = config.getHostUrl() + 'search/channel/'
+    var data = {
+      channel: name
+    }
+    return util.getRequest(url, data)
   }
 })

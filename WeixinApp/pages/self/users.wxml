@@ -1,5 +1,6 @@
 <!--pages/users/users.wxml-->
 <import src="../../templates/card.wxml" />
+<import src="../../dist/loadmore/index.wxml" />
 
 <view class="profile-img-panel">
   <block wx:if="{{user.profile_img}}">
@@ -11,22 +12,22 @@
   <view class="zan-col zan-col-8">
     <image class="avatar-profile" src="{{user.avatar}}"></image>
     <view class="zan-font-bold">{{user.nickname}}</view>
-    <view class="zan-font-16 zan-c-gray-dark">{{'@' + user.nickname}}</view>
+    <view class="zan-font-16 zan-c-gray-dark">{{'@' + user.username}}</view>
   </view>
   <view wx:if="{{notSelf}}" class="zan-col zan-col-4 zan-col-offset-6">
     <text class="zan-c-blue fa fa-lg fa-envelope-o"></text>
   </view>
   <view class="zan-col zan-col-6 {{notSelf ? '' : 'zan-col-offset-10'}}">
     <button wx:if="{{notSelf}}" class="zan-btn zan-btn--small {{user.is_following==true ? '' : 'zan-btn--plain'}} zan-btn--primary" catchtap="followButton">{{user.is_following==true ? '正在关注' : '+关注'}}</button>
-    <button wx:else class="zan-btn zan-btn--small zan-btn--plain zan-font-bold">编辑资料</button>
+    <button wx:else class="zan-btn zan-btn--small zan-btn--plain zan-font-bold" catchtap="toEditProfile">编辑资料</button>
   </view>
 </view>
 <view class="intro zan-font-16">
   <text decode="true">{{user.intro}}</text>
 </view>
 <view class="intro zan-row zan-c-gray-dark zan-font-14">
-  <text class="fa fa-map-marker zan-col zan-col-12"> {{user.country + ', '}}{{user.city}}</text>
-  <text class="zan-col zan-col-12 fa fa-weixin" decode="true">&nbsp;{{user.weixin_id==''? '未公开':user.weixin_id}}</text>
+  <text class="fa fa-map-marker zan-col zan-col-23"> {{user.province + ', '}}{{user.city + ', '}}{{user.district}}</text>
+  <text class="zan-col zan-col-23 fa fa-weixin" decode="true">&nbsp;{{user.weixin_id==''? '未公开':user.weixin_id}}</text>
   <view class="zan-col zan-col-8">
     <text class="zan-c-black zan-font-bold" decode="true">{{user.followers}}&nbsp;</text>
     <text>关注者</text>
@@ -52,30 +53,27 @@
     <swiper-item>
       <scroll-view scroll-y="{{scrollY}}" style="height:100%" bindscrolltolower="toBottom" lower-threshold="150" bindscrolltoupper="toUpper" upper-threshold="0" enable-back-to-top="{{true}}">
         <template is="messageCard" data="{{ message_list:postList,listName:'postList'}}" />
-        <view class="weui-loadmore" hidden="{{isHideLoadMore}}">
-          <view class="weui-loading"></view>
-          <view class="weui-loadmore__tips">正在加载</view>
-        </view>
+        <block wx:if="{{!isHideLoadMore}}">
+          <template is="zan-loadmore" data="{{ loading: true }}" />
+        </block>
       </scroll-view>
     </swiper-item>
     <!-- 转发与评论 -->
     <swiper-item>
       <scroll-view scroll-y="{{scrollY}}" style="height:100%" bindscrolltolower="toBottom" lower-threshold="150" bindscrolltoupper="toUpper" upper-threshold="0" enable-back-to-top="{{true}}">
         <template is="messageCard" data="{{ message_list:commentList,listName:'commentList'}}" />
-        <view class="weui-loadmore" hidden="{{isHideLoadMore}}">
-          <view class="weui-loading"></view>
-          <view class="weui-loadmore__tips">正在加载</view>
-        </view>
+        <block wx:if="{{!isHideLoadMore}}">
+          <template is="zan-loadmore" data="{{ loading: true }}" />
+        </block>
       </scroll-view>
     </swiper-item>
     <!-- 喜爱 -->
     <swiper-item>
       <scroll-view scroll-y="{{scrollY}}" style="height:100%" bindscrolltolower="toBottom" lower-threshold="150" bindscrolltoupper="toUpper" upper-threshold="0" enable-back-to-top="{{true}}">
         <template is="messageCard" data="{{ message_list:likeList,listName:'likeList'}}" />
-        <view class="weui-loadmore" hidden="{{isHideLoadMore}}">
-          <view class="weui-loading"></view>
-          <view class="weui-loadmore__tips">正在加载</view>
-        </view>
+        <block wx:if="{{!isHideLoadMore}}">
+          <template is="zan-loadmore" data="{{ loading: true }}" />
+        </block>
       </scroll-view>
     </swiper-item>
     <!-- 照片 -->
@@ -86,10 +84,9 @@
             <image class="userphoto" src="{{item}}" catchtap="previewImage" data-current="{{item}}" data-all="{{imgList}}" lazy-load="{{true}}" mode="widthFix"></image>
           </view>
         </block>
-        <view class="weui-loadmore" hidden="{{isHideLoadMore}}">
-          <view class="weui-loading"></view>
-          <view class="weui-loadmore__tips">正在加载</view>
-        </view>
+        <block wx:if="{{!isHideLoadMore}}">
+          <template is="zan-loadmore" data="{{ loading: true }}" />
+        </block>
       </scroll-view>
     </swiper-item>
   </swiper>

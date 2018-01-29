@@ -78,6 +78,11 @@ Page({
         icon: 'success',
         duration: 800
       })
+    })
+    app.getUser(wx.getStorageSync('userinfo').user_id).then(res => {
+      that.setData({
+        user: res.data
+      })
     })    
   },
 
@@ -311,6 +316,14 @@ Page({
     var messageId = event.currentTarget.dataset.messageid
     var focus = event.currentTarget.dataset.focus
     var url = '../message_detail/message_detail?messageid=' + messageId + '&focus=' + focus
+    wx.navigateTo({
+      url: url,
+    })
+  },
+
+  toEditProfile: function (event) {
+    var that = this
+    var url = '../edit_profile/edit_profile'
     wx.navigateTo({
       url: url,
     })

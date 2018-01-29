@@ -1,4 +1,0 @@
-<!--logs.wxml-->
-<view class="container">
-  <text>{{login_status}}</text>
-</view>

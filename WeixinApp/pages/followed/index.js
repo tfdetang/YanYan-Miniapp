@@ -9,6 +9,7 @@ Page({
   data: {
     message_list: [],
     isHideLoadMore: true,
+    isNoMore: false,
   },
   onLoad: function (option) {
     var that = this
@@ -61,6 +62,9 @@ Page({
         isHideLoadMore: true
       })
       if (list_message[list_message.length - 1].event_id == bottom) {
+        that.setData({
+          isNoMore: true
+        })
         wx.showToast({
           title: '已经到底了',
           duration: 800

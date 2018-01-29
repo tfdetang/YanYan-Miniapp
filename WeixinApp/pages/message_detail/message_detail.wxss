@@ -84,7 +84,7 @@
 }
 
 .quote-body {
-  max-height: 4rem;
+  max-height: 4.5rem;
   display: -webkit-box;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -182,4 +182,22 @@
 
 .zan-btn {
   border-radius: 0.2rem;
+}
+
+.popup-example--top .zan-popup__container {
+  padding: 15px;
+  top:15%;
+  width:70%;
+  background-color: rgba(0, 0, 0, 0.8);
+  color: #fff;
+  font-size: 16px;
+  border-radius: 4px;
+}
+.popup-example--top .zan-popup__mask {
+  opacity: 0;
+}
+
+.search-item{
+  padding:0.2rem;
+  color: gray
 }

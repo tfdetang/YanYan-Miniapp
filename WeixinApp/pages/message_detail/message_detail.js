@@ -19,7 +19,12 @@ Page({
     replyValue: '',
     textValue: '',
     toolsHidden: true,
-    uploadHidden: true
+    uploadHidden: true,
+    showTopPopup: false,
+    searchFocus: false,
+    searchValue: "",
+    searchMethod: 'user',
+    searchList:[]
   },
   onLoad: function (option) {
     var that = this
@@ -30,7 +35,7 @@ Page({
         focus: option.focus,
         retweetCheck: option.retweetCheck,
       })
-      if (res.data.author_id == wx.getStorageSync('userinfo').user_id){
+      if (res.data.author_id == wx.getStorageSync('userinfo').user_id) {
         that.setData({
           author: true
         })
@@ -336,7 +341,7 @@ Page({
       that.setData(params)
     })
   },
-  
+
   delLink: function (event) {
     var that = this
     wx.showModal({
@@ -349,7 +354,7 @@ Page({
               title: '已删除推文',
               mask: true,
               duration: 1000
-            })            
+            })
           })
         } else if (res.cancel) {
           console.log('用户点击取消')
@@ -372,5 +377,65 @@ Page({
         })
       }
     }
+  },
+
+  searchInput(event) {
+    var that = this
+    var text = event.detail.value
+    var method = that.data.searchMethod
+    if(text.length > 0){
+      if (method == 'user') {
+        app.searchUsers(text).then(res => {
+          console.log(res.data.user_list)
+          that.setData({
+            searchList: res.data.user_list
+          })
+        })
+      } else {
+        app.searchChannels(text).then(res => {
+          console.log(res.data.channel_list)
+          that.setData({
+            searchList: res.data.channel_list
+          })
+        })
+      }
+    }
+  },
+
+  search(event) {
+    var that = this
+    wx.hideKeyboard()
+    var method = event.currentTarget.dataset.method
+    if (method == 'user') {
+      var tag = '@'
+    } else {
+      var tag = '#'
+    }
+    that.setData({
+      showTopPopup: true,
+      searchValue: "",
+      searchFocus: true,
+      searchTag: tag,
+      searchMethod: method
+    });
+  },
+
+  pasteName(event) {
+    var that = this
+    wx.hideKeyboard()
+    var text = that.data.searchTag + event.currentTarget.dataset.name
+    var textValue = that.data.textValue + text + ' '
+    that.setData({
+      showTopPopup: !that.data.showTopPopup,
+      textValue: textValue,
+      focus: true
+    })
+  },
+
+  toggleTopPopup() {
+    var that = this
+    that.setData({
+      showTopPopup: !that.data.showTopPopup
+    });
   }
 })

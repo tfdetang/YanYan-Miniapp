@@ -59,17 +59,24 @@ Page({
   sendSubmit: function (event) {
     var that = this
     var body = that.data.textValue
-    app.sendChat(that.data.user.userid, body).then(res => {
-      var sendData = res.data
-      var oldList = that.data.chatList
-      oldList.push(sendData)
-      that.setData({
-        chatList: oldList,
-        top: that.data.top + 1000,
-        textValue:"",
-        animation:true
+    if (body.length > 0) {
+      app.sendChat(that.data.user.userid, body).then(res => {
+        var sendData = res.data
+        var oldList = that.data.chatList
+        oldList.push(sendData)
+        that.setData({
+          chatList: oldList,
+          top: that.data.top + 1000,
+          textValue: "",
+          animation: true
+        })
       })
-    })
+    }else{
+      wx.showToast({
+        title: '说些什么吧',
+        duration: 1000
+      })
+    }
   },
 
   toUpper: function (event){
