@@ -3,6 +3,9 @@ const config = require('../../utils/config.js')
 const util = require('../../utils/util.js')
 const app = getApp()
 
+let col1H = 0
+let col2H = 0
+
 Page({
 
   data: {
@@ -17,7 +20,11 @@ Page({
     postList: [],
     commentList: [],
     likeList: [],
-    imgList: []
+    imgList: [],
+    imgWidth: 0,
+    loadingCount: 0,
+    col1: [],
+    col2: []
   },
 
   onLoad: function (options) {
@@ -39,9 +46,14 @@ Page({
     })
     wx.getSystemInfo({       // 设置屏幕高度
       success: function (res) {
+        let ww = res.windowWidth;
+        let wh = res.windowHeight;
+        let imgWidth = ww * 0.44;
+        let scrollH = wh;
         that.setData({
           winWidth: res.windowWidth,
-          winHeight: res.windowHeight
+          winHeight: res.windowHeight,
+          imgWidth: imgWidth
         })
       }
     })
@@ -83,7 +95,7 @@ Page({
       that.setData({
         user: res.data
       })
-    })    
+    })
   },
 
   onReachBottom: function () { // 滚动到底部时 才启用scroll-view
@@ -128,7 +140,7 @@ Page({
         app.loadUserPhoto(offset, userId).then(res => {
           var imageUrls = []
           for (var i = 0; i < res.data.num; i++) {
-            imageUrls[i] = res.data.photo_list[i].url
+            imageUrls[i] = res.data.photo_list[i]
           }
           var newlist = old_list.concat(imageUrls)
           var params = {}
@@ -211,7 +223,7 @@ Page({
         app.loadUserPhoto(0, userId).then(res => {
           var imageUrls = []
           for (var i = 0; i < res.data.num; i++) {
-            imageUrls[i] = res.data.photo_list[i].url
+            imageUrls[i] = res.data.photo_list[i]
           }
           console.log(imageUrls)
           that.setData({
@@ -339,5 +351,52 @@ Page({
         url: url,
       })
     }
+  },
+
+  onImageLoad: function (e) {
+    let imageId = e.currentTarget.id;
+    let oImgW = e.detail.width;         //图片原始宽度
+    let oImgH = e.detail.height;        //图片原始高度
+    let imgWidth = this.data.imgWidth;  //图片设置的宽度
+    let scale = imgWidth / oImgW;        //比例计算
+    let imgHeight = oImgH * scale;      //自适应高度
+    console.log(oImgW, oImgH, imgWidth, scale, imgHeight)
+
+    let images = this.data.imgList;
+    let imageObj = null;
+
+    for (let i = 0; i < images.length; i++) {
+      let img = images[i];
+      if (img.id == imageId) {
+        imageObj = img;
+        break;
+      }
+    }
+
+    imageObj.height = imgHeight;
+
+    let loadingCount = this.data.loadingCount - 1;
+    let col1 = this.data.col1;
+    let col2 = this.data.col2;
+
+    if (col1H <= col2H) {
+      col1H += imgHeight;
+      col1.push(imageObj);
+    } else {
+      col2H += imgHeight;
+      col2.push(imageObj);
+    }
+
+    let data = {
+      loadingCount: loadingCount,
+      col1: col1,
+      col2: col2
+    };
+
+    if (!loadingCount) {
+      data.images = [];
+    }
+
+    this.setData(data);
   },
 })

@@ -4,9 +4,32 @@
   <view class="upload-field">
     <view class="tool-container zan-row">
       <view catchtap="uploadImg" class="tool-logo fa fa-lg fa-picture-o zan-col zan-col-4"></view>
-      <view class="tool-logo fa fa-lg fa-at zan-col zan-col-4"></view>
-      <view class="zan-col zan-col-7 zan-col-offset-9 ">
+      <view class="fa fa-lg fa-at tool-logo zan-col zan-col-4 zan-c-gray-darker" catchtap="search" data-method="user"></view>
+          <view class="fa fa-lg fa-hashtag tool-logo zan-col zan-col-4 zan-c-gray-darker" catchtap="search" data-method="channel"></view>
+      <view class="zan-col zan-col-7 zan-col-offset-5 ">
         <button class="zan-btn {{buttonLoading}} zan-btn--small zan-btn--primary fa fa-paper-plane-o" catchtap="sendMessage">发送</button>
+      </view>
+    </view>
+  </view>
+  <!-- 顶部搜索栏 -->
+  <view class="popup-example--top zan-popup {{ showTopPopup ? 'zan-popup--show' : ''}}">
+    <view class="zan-popup__mask" catchtap="toggleTopPopup"></view>
+    <view class="zan-popup__container">
+      <input placeholder='这里搜索' value="{{searchValue}}" focus='{{searchFocus}}' bindinput="searchInput"></input>
+      <text>搜索结果：</text>
+      <view wx:for="{{searchList}}" class="zan-row search-item">
+        <view wx:if="{{searchMethod=='user'}}" class="zan-row" catchtap="pasteName" data-name="{{item.username}}">
+          <view class="zan-col zan-col-3">
+            <image class="avatar-small" src="{{item.avatar}}" />
+          </view>
+          <text class="zan-col zan-col-20 zan-font-16"> @{{item.username}}</text>
+        </view>
+        <view wx:else class="zan-row" catchtap="pasteName" data-name="{{item.name}}">
+          <view class="zan-col zan-col-3">
+            <text class="fa fa-lg fa-hashtag"></text>
+          </view>
+          <text class="zan-col zan-col-20 zan-font-16"> {{item.name}}</text>
+        </view>
       </view>
     </view>
   </view>

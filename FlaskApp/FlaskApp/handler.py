@@ -104,8 +104,9 @@ def new_user_register(openid, userinfo):
                     subscribe_status=1)
     new_user.save()
     new_user.set_profile()
-    new_user.self.followed.append(new_user)
+    new_user.followed.append(new_user)
     new_user.add_role()
+    new_user.save()
     executor.submit(tools.save_img(userinfo.get('avatarUrl'), 'avatar_{}'.format(new_user.id)))
     return new_user
 

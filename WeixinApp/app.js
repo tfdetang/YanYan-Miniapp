@@ -279,6 +279,7 @@ App({
     for (var i = 0; i < tempFilePaths.length; i++) {
       var params = config.getUptoken()
       qiniuUploader.upload(tempFilePaths[i], (res) => {
+        console.log(res)
         var imgurl = res.hash
         var url = config.getHostUrl() + 'message/uploadimg/'
         var data = {

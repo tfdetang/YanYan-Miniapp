@@ -3,38 +3,54 @@ const config = require('../../utils/config.js')
 const util = require('../../utils/util.js')
 const app = getApp()
 
+let col1H = 0
+let col2H = 0
+
 Page({
 
   data: {
     channelName: "",
-    messageList: [],
+    message_list: [],
     isHideLoadMore: true,
     isNoMore: false,
+    winWidth: 0,
+    winHeight: 0,
+    imgWidth: 0,
+    loadingCount: 0,
+    col1: [],
+    col2: []
   },
 
 
   onLoad: function (options) {
     var that = this
     var channelName = options.channelname
+    wx.getSystemInfo({       // 设置屏幕高度
+      success: function (res) {
+        let ww = res.windowWidth;
+        let wh = res.windowHeight;
+        let imgWidth = ww * 0.44;
+        let scrollH = wh;
+        that.setData({
+          winWidth: res.windowWidth,
+          winHeight: res.windowHeight,
+          imgWidth: imgWidth
+        })
+      }
+    })
     app.loadChannelMessages(channelName, 0).then(res => {
       that.setData({
-        messageList: res.data.message_list,
+        message_list: res.data.message_list,
         channelName: channelName
       })
       wx.setNavigationBarTitle({
         title: "#" + channelName,
       })
+      wx.stopPullDownRefresh()
+      wx.hideNavigationBarLoading()
     })
   },
 
-  previewImage: function (event) { // 点击图片直接显示图片预览
-    var current = event.currentTarget.dataset.current
-    var urls = event.currentTarget.dataset.all
-    wx.previewImage({
-      current: current,
-      urls: urls
-    })
-  },
 
   toMessage: function (event) { // 跳转链接
     var that = this
@@ -58,73 +74,13 @@ Page({
     }
   },
 
-  favoButton: function (event) { //点击喜爱
-    wx.showToast({
-      icon: 'loading',
-      title: '操作中',
-      mask: true,
-      duration: 1000
-    })
-    var that = this
-    var listName = event.currentTarget.dataset.listname
-    var index = event.currentTarget.dataset.idx
-    var messageId = event.currentTarget.dataset.message.id
-    var favoCount = listName + "[" + index + "].favo_count"
-    var isFavoed = listName + "[" + index + "].is_favoed"
-    app.favoMessage(messageId).then(res => {
-      var params = {}
-      params[favoCount] = res.data.count
-      params[isFavoed] = res.data.favo
-      that.setData(params)
-    })
-  },
-
-  retweetButton: function (event) { //点击转发
-    var that = this
-    var listName = event.currentTarget.dataset.listname
-    var index = event.currentTarget.dataset.idx
-    var messageId = event.currentTarget.dataset.message.id
-    var url = '../message_detail/message_detail?messageid=' + messageId + '&focus=true'
-    var quoteCount = listName + "[" + index + "].quote_count"
-    var isQuoted = listName + "[" + index + "].is_quoted"
-    wx.showActionSheet({
-      itemList: ['转发', '转发并回复'],
-      success: function (res) {
-        if (res.tapIndex == 0) {  //直接转发
-          app.retweetMessage(messageId, "").then(res => {
-            var params = {}
-            params[quoteCount] = res.data.quotecount
-            params[isQuoted] = true
-            that.setData(params)
-          })
-        } else { // 转发并回复
-          wx.navigateTo({
-            url: url + '&retweetCheck=true',
-          })
-        }
-        console.log(res.tapIndex)
-        console.log(messageId)
-      },
-      fail: function (res) {
-        console.log(res.errMsg)
-      }
-    })
-  },
 
   onPullDownRefresh: function () {
     var that = this
     wx.showNavigationBarLoading()
-    app.loadChannelMessages(that.data.channelName, 0).then(res => {
-      that.setData({
-        messageList: res.data.message_list,
-      })
-      wx.stopPullDownRefresh()
-      wx.hideNavigationBarLoading()
-      wx.showToast({
-        title: '刷新完毕',
-        icon: 'success',
-        duration: 800
-      })
+    var url = '../channel_message/channel_message?channelname=' + that.data.channelName
+    wx.reLaunch({
+      url: url
     })
   },
 
@@ -140,18 +96,63 @@ Page({
       var get_list = res.data.message_list
       var list_message = old_list.concat(get_list)
       that.setData({
-        messageList: list_message,
+        message_list: list_message,
         isHideLoadMore: true
       })
       if (get_list.length == 0) {
         that.setData({
           isNoMore: true
         })
-        wx.showToast({
-          title: '已经到底了',
-          duration: 800
-        })
       }
     })
+  },
+
+  onImageLoad: function (e) {
+    let imageId = e.currentTarget.id;
+    let oImgW = e.detail.width;         //图片原始宽度
+    let oImgH = e.detail.height;        //图片原始高度
+    let imgWidth = this.data.imgWidth;  //图片设置的宽度
+    let scale = imgWidth / oImgW;        //比例计算
+    let imgHeight = oImgH * scale;      //自适应高度
+
+    let images = this.data.message_list;
+    let imageObj = null;
+
+    for (let i = 0; i < images.length; i++) {
+      let img = images[i];
+      if (img.event_id == imageId) {
+        imageObj = img;
+        break;
+      }
+    }
+
+    imageObj.height = imgHeight;
+
+    let loadingCount = this.data.loadingCount - 1;
+    let col1 = this.data.col1;
+    let col2 = this.data.col2;
+
+    if (col1H <= col2H) {
+      col1H += imgHeight + 61;
+      col1.push(imageObj);
+    } else {
+      col2H += imgHeight + 61;
+      col2.push(imageObj);
+    }
+
+    let data = {
+      loadingCount: loadingCount,
+      col1: col1,
+      col2: col2
+    };
+
+
+    if (!loadingCount) {
+      data.message_list = [];
+    }
+
+    console.log(data)
+
+    this.setData(data);
   },
 })

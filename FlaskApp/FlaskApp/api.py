@@ -251,7 +251,7 @@ def get_user_photos(userid):
     user = load_user_by_id(int(userid))
     if not user:
         return jsonify({'error': 'wrong_user_id'})
-    limit = 5
+    limit = 10
     query = user.self_photos().order_by(Image.id.desc())
     photos = photo_2_dict(query.offset(int(start)).limit(limit).all())
     result = dict(num=len(photos),
@@ -398,6 +398,7 @@ def messages_2_list(messages, login=True, constract=False):
     for i in messages:
         message = message_2_dict(i, login, constract)
         message['time'] = tools.timestamp_2_zh(i.time_create)
+        message['event_id'] = message['id']
         if i.type == 0:
             message['type'] = 1
         elif i.type == 1:
@@ -459,7 +460,8 @@ def photo_2_dict(photos):
             photodict = dict(uploader=i.uploader,
                              uploade_time=tools.timestamp_2_str(i.uploade_time),
                              url=app.config['BASE_URL'] + i.url,
-                             relate_message=i.relate_message)
+                             relate_message=i.relate_message,
+                             id=i.id)
             relate_message = db.session.query(Message).filter(Message.id == i.relate_message).one()
             photodict['caption'] = relate_message.body
             photo_list.append(photodict)

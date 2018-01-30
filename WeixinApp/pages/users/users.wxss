@@ -53,6 +53,33 @@
   border-bottom: 5rpx solid #dd6f8c;
 }
 
-.userphoto{
-  width: 100%
+.WxMasonry {
+  width: 95%;
+  margin: 5px 2px 2px 2px;
+  transition: opacity 0.4s ease-in-out;
+  display: inline-block;
+}
+
+.WxMasonryImage {
+  width: 100% !important;
+  display: inline-block;
+  border-radius: 10px;
+}
+
+.WxMasonryView {
+  column-count: 2;
+  column-gap: 10px;
+  width: 100%;
+}
+
+.img_item {
+  padding:0.4rem;
+  width: 45%;
+  display: inline-block;
+  vertical-align: top;
+}
+
+.flow_img{
+  border-radius: 5px;
+  margin-bottom: 0.6rem;
 }

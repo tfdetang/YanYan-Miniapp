@@ -1,1 +1,45 @@
 /* pages/channel_message/channel_message.wxss */
+
+.img_item {
+  padding: 0.4rem;
+  width: 45%;
+  display: inline-block;
+  vertical-align: top;
+}
+
+.flow_img {
+  border-radius: 10px;
+}
+
+.img_footer {
+  margin-top:0.2rem;
+  height: 3.6rem;
+}
+
+.img_header {
+  height:1.3rem;
+}
+
+.headerText{
+  font-size: 0.6rem;
+  color: gray;
+}
+
+.messageText {
+  font-size: 0.6rem;
+  max-height: 1.8rem;
+  display: -webkit-box;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  word-break: break-all;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-height: 130%;
+  color: rgb(80,80,80)
+}
+
+.messageIcon{
+  text-align:right;
+  font-size: 0.5rem;
+  color: gray
+}

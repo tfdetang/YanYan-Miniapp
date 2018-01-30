@@ -76,14 +76,24 @@
         </block>
       </scroll-view>
     </swiper-item>
-    <!-- 照片 -->
+        <!-- 照片 -->
+    <view style="display:none">
+      <image wx:for="{{imgList}}" wx:key="id" id="{{item.id}}" src="{{item.url}}" bindload="onImageLoad"></image>
+    </view>
     <swiper-item>
       <scroll-view scroll-y="{{scrollY}}" style="height:100%" bindscrolltolower="toBottom" lower-threshold="150" bindscrolltoupper="toUpper" upper-threshold="0" enable-back-to-top="{{true}}">
-        <block wx:for="{{imgList}}">
-          <view class="photo-wall">
-            <image class="userphoto" src="{{item}}" catchtap="previewImage" data-current="{{item}}" data-all="{{imgList}}" lazy-load="{{true}}" mode="widthFix"></image>
+        <view style="width:100%">
+          <view class="img_item">
+            <view wx:for="{{col1}}" wx:key="id">
+              <image src="{{item.url}}" class="flow_img" style="width:100%;height:{{item.height}}px"></image>
+            </view>
           </view>
-        </block>
+          <view class="img_item">
+            <view wx:for="{{col2}}" wx:key="id">
+              <image src="{{item.url}}" class="flow_img" style="width:100%;height:{{item.height}}px"></image>
+            </view>
+          </view>
+        </view>
         <block wx:if="{{!isHideLoadMore}}">
           <template is="zan-loadmore" data="{{ loading: true }}" />
         </block>

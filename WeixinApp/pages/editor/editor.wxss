@@ -69,3 +69,22 @@
   left:0.4rem;
   top:0.2rem
 }
+
+.popup-example--top .zan-popup__container {
+  padding: 15px;
+  top:40%;
+  width:70%;
+  background-color: rgba(0, 0, 0, 0.8);
+  color: #fff;
+  font-size: 16px;
+  border-radius: 4px;
+  z-index: 9999;
+}
+.popup-example--top .zan-popup__mask {
+  opacity: 0;
+}
+
+.search-item{
+  padding:0.2rem;
+  color: gray
+}

@@ -53,6 +53,14 @@
   border-bottom: 5rpx solid #dd6f8c;
 }
 
-.userphoto{
-  width: 100%
+.img_item {
+  padding:0.4rem;
+  width: 45%;
+  display: inline-block;
+  vertical-align: top;
+}
+
+.flow_img{
+  border-radius: 5px;
+  margin-bottom: 0.6rem;
 }

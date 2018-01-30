@@ -6,7 +6,7 @@
   <view class="edit-button" catchtap="toEditor">
     <view class="fa fa-2x fa-pencil edit-logo"></view>
   </view>
-  <template is="messageCard" data="{{ message_list:message_list,listName:'message_list'}}" />
+  <template is="waterFall" data="{{ message_list:message_list,col1:col1,col2:col2}}" />
   <!-- 用来显示底部加载动画 -->
   <block wx:if="{{!isHideLoadMore}}">
     <template is="zan-loadmore" data="{{ loading: true }}"/>
