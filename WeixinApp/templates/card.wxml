@@ -36,6 +36,18 @@
   </block>
 </template>
 
+<!--卡片模式下图片显示模板 -->
+
+<template name="cardImage">
+  <swiper wx:if="{{images.length>0}}" indicator-dots="{{images.length>1? 'true':''}}" indicator-color="#dd6f8c" style="height:15rem">
+    <block wx:for="{{images}}" wx:for-item="image">
+      <swiper-item>
+        <image class="zan-col zan-col-22 card-image" mode="aspectFill" src="{{image}}" catchtap="previewImage" data-current="{{image}}" data-all="{{images}}" lazy-load="{{true}}"></image>
+      </swiper-item>
+    </block>
+  </swiper>
+</template>
+
 <!-- 精彩瞬间卡片 -->
 <template name="momentCard">
   <view class="{{images.length>0? 'img-card':'black-card'}} moment" catchtap="toMoment" data-idx="{{index}}">
@@ -127,7 +139,7 @@
 <!--瀑布流message body模板-->
 <template name='messageBody'>
   <view class="zan-row" catchtap="toMessage" data-messageId="{{id}}" data-focus="">
-    <view class="messageText zan-font-bold zan-col zan-col-20">
+    <view class="messageText zan-font-bold zan-col zan-col-20 {{type==2? 'quoteText':''}}">
       <text>{{body}}</text>
     </view>
     <view class="zan-col zan-col-4 messageIcon fa {{is_favoed==true? 'zan-c-red fa-heart':'zan-c-gray-darker fa-heart-o'}}">
@@ -136,7 +148,8 @@
   </view>
   <view class="zan-row" catchtap="toUser" data-userid="{{author_id}}" style="margin-top:0.2rem">
     <view class="zan-col zan-col-4">
-      <image class="avatar-tiny" src="{{avatar}}"></image>
+      <image wx:if="{{type!=2}}" class="avatar-tiny" src="{{avatar}}"></image>
+      <text wx:else class='fa fa-retweet zan-c-gray-dark'></text>
     </view>
     <view class="zan-col zan-col-10">
       <view class="messageText zan-font-bold">{{nickname}}</view>
@@ -160,9 +173,12 @@
 
 <!-- 瀑布流message_list模板-->
 <template name='waterFall'>
-  <view style="display:none">
-    <block wx:for="{{message_list}}">
+  <view style="display:none" wx:for="{{message_list}}">
+    <block wx:if="{{item.type != 2}}">
       <image wx:key="id" id="{{item.event_id}}" src="{{item.images[0]}}" bindload="onImageLoad"></image>
+    </block>
+    <block wx:else>
+      <image wx:key="id" id="{{item.event_id}}" src="{{item.quoted.images[0]}}" bindload="onImageLoad"></image>
     </block>
   </view>
   <view style="width:100%">
@@ -171,7 +187,8 @@
         <view class="img_header">
           <template is="messageHeader" data="{{...item}}"></template>
         </view>
-        <image src="{{item.images[0]}}" class="flow_img" style="width:100%;height:{{item.height}}px" catchtap="toMessage" data-messageId="{{item.id}}" data-focus=""></image>
+        <image wx:if="{{item.type!=2}}" src="{{item.images[0]}}" class="flow_img" style="width:100%;height:{{item.height}}px" catchtap="toMessage" data-messageId="{{item.id}}" data-focus=""></image>
+        <image wx:else src="{{item.quoted.images[0]}}" class="flow_img" style="width:100%;height:{{item.height}}px" catchtap="toMessage" data-messageId="{{item.id}}" data-focus=""></image>
         <view class="img_footer">
           <template is="messageBody" data="{{...item}}"></template>
         </view>
@@ -182,7 +199,8 @@
         <view class="img_header">
           <template is="messageHeader" data="{{...item}}"></template>
         </view>
-        <image src="{{item.images[0]}}" class="flow_img" style="width:100%;height:{{item.height}}px" catchtap="toMessage" data-messageId="{{item.id}}" data-focus=""></image>
+        <image wx:if="{{item.type!=2}}" src="{{item.images[0]}}" class="flow_img" style="width:100%;height:{{item.height}}px" catchtap="toMessage" data-messageId="{{item.id}}" data-focus=""></image>
+        <image wx:else src="{{item.quoted.images[0]}}" class="flow_img" style="width:100%;height:{{item.height}}px" catchtap="toMessage" data-messageId="{{item.id}}" data-focus=""></image>
         <view class="img_footer">
           <template is="messageBody" data="{{...item}}"></template>
         </view>
@@ -201,7 +219,12 @@
       <view class='zan-tag zan-c-gray-darker' catchtap="toUser" data-userid="{{item.associate_id}}">{{item.associate_nickname}}</view>
     </view>
     <!-- 显示消息的正文内容 -->
-    <view wx:else class="zan-panel" catchtap="toMessage" data-messageId="{{item.id}}" data-focus="">
+    <view wx:else class="zan-panel card" catchtap="toMessage" data-messageId="{{item.id}}" data-focus="">
+      <!-- 图片显示控件 -->
+      <view>
+        <template is="cardImage" data="{{ ...item }}" />
+      </view>
+      <!-- 关注与转发等信息 -->
       <view wx:if="{{item.type == 5}}" class="message-header">
         <text class="fa fa-heart zan-c-gray"></text>
         <text decode='true'>&nbsp;</text>
@@ -214,19 +237,26 @@
         <view class='zan-tag zan-c-gray-darker' catchtap="toUser" data-userid="{{item.sponsor_id}}">{{item.sponsor_nickname}} </view>
         <text class='zan-c-gray-darker zan-font-12'> {{item.time}} 转发了</text>
       </view>
-      <view style="padding: 1rem;" class="zan-row">
-        <view class="zan-col zan-col-4">
-          <image class="avatar" src="{{item.avatar}}" catchtap="toUser" data-userid="{{item.author_id}}"></image>
-        </view>
-        <view class="zan-col zan-col-20">
-          <text class="zan-font-16 zan-font-bold" catchtap="toUser" data-userid="{{item.author_id}}">{{item.nickname}}</text>
-          <text class="zan-font-16" wx:if="{{item.type == 3}}" decode="true"> &nbsp;回复到:</text>
-          <text class="zan-font-12 zan-c-gray-dark zan-pull-right" decode='true'> &nbsp; {{item.time}}</text>
-          <view class="zan-font-16 zan-c-gray-darker {{item.type==10? 'zan-text-deleted':''}}">{{item.body}}</view>
-          <!-- 图片显示控件 -->
-          <view class='zan-row' style="padding-top:0.5rem">
-            <template is="imgPlacehoder" data="{{ ...item }}" />
+      <view style="padding: 0.7rem;">
+        <view>
+          <view class="zan-row">
+            <view class="zan-col zan-col-4">
+              <image class="avatar" src="{{item.avatar}}" catchtap="toUser" data-userid="{{item.author_id}}"></image>
+            </view>
+            <view class="zan-col zan-col-15">
+              <view>
+                <text class="zan-font-16 zan-font-bold" catchtap="toUser" data-userid="{{item.author_id}}">{{item.nickname}}</text>
+                <text class="zan-font-16 " wx:if="{{item.type == 3}}" decode="true"> &nbsp;回复到:</text>
+              </view>
+              <view>
+                <text class="zan-font-16 zan-c-gray-dark" catchtap="toUser" data-userid="{{item.author_id}}">@{{item.username}}</text>
+              </view>
+            </view>
+            <view class="zan-col zan-col-5">
+              <text class="zan-font-12 zan-c-gray-dark zan-pull-right" decode='true'> &nbsp; {{item.time}}</text>
+            </view>
           </view>
+          <view class="zan-font-16 zan-c-gray-darker {{item.type==10? 'zan-text-deleted':''}}">{{item.body}}</view>
           <!-- 显示引用的消息 -->
           <block wx:if="{{item.quoted && item.type != 3}}">
             <template is="quote" data="{{ ...item }}" />
@@ -234,16 +264,14 @@
           <!-- 显示每条消息的页脚 -->
           <view class="zan-row">
             <text>\n</text>
-            <view class="icons-bar zan-col zan-col-6 fa {{item.is_favoed==true? 'zan-c-red fa-heart':'zan-c-gray-darker fa-heart-o'}}" catchtap="favoButton" data-message="{{item}}" data-listname="{{listName}}" data-idx="{{index}}">
+            <view class="icons-bar zan-col zan-col-4 fa {{item.is_favoed==true? 'zan-c-red fa-heart':'zan-c-gray-darker fa-heart-o'}}" catchtap="favoButton" data-message="{{item}}" data-listname="{{listName}}" data-idx="{{index}}">
               {{item.favo_count}}
             </view>
-            <view class="icons-bar zan-col zan-col-6 fa {{item.is_comment==true? 'zan-c-blue fa-comments':'zan-c-gray-darker fa-comments-o'}}" catchtap="toMessage" data-messageId="{{item.id}}" data-focus="true">
+            <view class="icons-bar zan-col zan-col-4 fa {{item.is_comment==true? 'zan-c-blue fa-comments':'zan-c-gray-darker fa-comments-o'}}" catchtap="toMessage" data-messageId="{{item.id}}" data-focus="true">
               {{item.comment_count}}
             </view>
-            <view class="icons-bar zan-col zan-col-6 fa fa-retweet {{item.is_quoted==true? 'zan-c-green':'zan-c-gray-darker'}}" catchtap="retweetButton" data-message="{{item}}" data-listname="{{listName}}" data-idx="{{index}}">
+            <view class="icons-bar zan-col zan-col-4 fa fa-retweet {{item.is_quoted==true? 'zan-c-green':'zan-c-gray-darker'}}" catchtap="retweetButton" data-message="{{item}}" data-listname="{{listName}}" data-idx="{{index}}">
               {{item.quote_count}}
-            </view>
-            <view class="icons-bar zan-col zan-col-6 zan-c-gray-darker fa fa-envelope-o">
             </view>
           </view>
         </view>

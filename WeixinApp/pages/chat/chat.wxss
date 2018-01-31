@@ -100,7 +100,7 @@
 
 .you {
   float: left;
-  margin: 10px 100px 10px 20px;
+  margin: 10px 150px 10px 20px;
 }
 
 .you::before {
@@ -112,7 +112,7 @@
   color: white;
   background-color:rgb(68,186,0);
   float: right;
-  margin: 10px 20px 10px 100px;
+  margin: 10px 20px 10px 150px;
 }
 
 .me::before {

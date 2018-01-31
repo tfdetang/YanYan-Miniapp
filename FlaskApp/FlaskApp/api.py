@@ -413,20 +413,25 @@ def messages_2_list(messages, login=True, constract=False):
 def events_2_dict(events):
     message_list = []
     if events:
+        id_list = []
         for i in events:
             if i.type == 1:
                 message = message_2_dict(i.get_message())
                 message['type'] = i.type
                 message['time'] = tools.timestamp_2_zh(i.time)
                 message['event_id'] = i.id
-                message_list.append(message)
+                if message['id'] not in id_list:
+                    message_list.append(message)
+                    id_list.append(message['id'])
             elif i.type == 2 or i.type == 3:
                 message = message_2_dict(i.get_message())
                 message['type'] = i.type
                 message['quoted'] = message_2_dict(i.get_message().get_quoted_message())
                 message['time'] = tools.timestamp_2_zh(i.time)
                 message['event_id'] = i.id
-                message_list.append(message)
+                if message['quoted']['id'] not in id_list:
+                    message_list.append(message)
+                    id_list.append(message['quoted']['id'])
             elif i.type == 4 or i.type == 5:
                 message = message_2_dict(i.get_message())
                 message['type'] = i.type
@@ -439,7 +444,9 @@ def events_2_dict(events):
                 message['associate_id'] = i.associate_user
                 message['time'] = tools.timestamp_2_zh(i.time)
                 message['event_id'] = i.id
-                message_list.append(message)
+                if message['id'] not in id_list:
+                    message_list.append(message)
+                    id_list.append(message['id'])
             elif i.type == 7:
                 associate = i.get_associateuser()
                 message = dict(sponsor_nickname=i.get_sponsor().nickname,
