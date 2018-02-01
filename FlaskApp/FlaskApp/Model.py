@@ -487,6 +487,9 @@ class Channel(Base, db.Model, Utils):
     def is_channel(self, name):
         return db.session.query(Channel).filter(Channel.name == name).count() > 0
 
+    def message_count(self):
+        return db.session.query(channel_2_message).filter(channel_2_message.c.channel_id == self.id).count()
+
     def most_comment_message(self):
         query = db.session.query(Message).join(channel_2_message,
                                                channel_2_message.c.message_id == Message.id).filter(
@@ -533,6 +536,9 @@ class Message(Base, db.Model, Utils):
     favo_users = relationship('User',
                               secondary=message_favo,
                               lazy='dynamic')
+    quote_users = relationship('User',
+                               secondary=message_quoted,
+                               lazy='dynamic')
 
     def get_quoted_message(self):
         return db.session.query(Message).filter(Message.id == self.quote_id).one()

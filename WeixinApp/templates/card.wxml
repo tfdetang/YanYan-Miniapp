@@ -39,13 +39,14 @@
 <!--卡片模式下图片显示模板 -->
 
 <template name="cardImage">
-  <swiper wx:if="{{images.length>0}}" indicator-dots="{{images.length>1? 'true':''}}" indicator-color="#dd6f8c" style="height:15rem">
-    <block wx:for="{{images}}" wx:for-item="image">
-      <swiper-item>
+  <block wx:if="{{images.length>0}}">
+    <swiper wx:if="{{images.length>1}}" indicator-dots="true" indicator-color="#dd6f8c" style="height:15rem">
+      <swiper-item wx:for="{{images}}" wx:for-item="image">
         <image class="zan-col zan-col-22 card-image" mode="aspectFill" src="{{image}}" catchtap="previewImage" data-current="{{image}}" data-all="{{images}}" lazy-load="{{true}}"></image>
       </swiper-item>
-    </block>
-  </swiper>
+    </swiper>
+    <image wx:else class="zan-col zan-col-22 card-image" mode="aspectFill" src="{{images[0]}}" catchtap="previewImage" data-current="{{images[0]}}" data-all="{images[0]}}" lazy-load="{{true}}" style="margin-bottom:0.5rem"></image>
+  </block>
 </template>
 
 <!-- 精彩瞬间卡片 -->
@@ -133,6 +134,34 @@
       <view class="zan-font-12 zan-c-gray-dark">{{time}}</view>
     </view>
   </block>
+</template>
+
+
+<!-- 用户列表模板 -->
+<template name="userList">
+  <view class="zan-panel">
+    <block wx:for="{{userList}}">
+      <view class="user-list-item zan-row" catchtap="toUser" data-userid="{{item.user_id}}">
+        <view class="zan-col zan-col-4">
+          <image class="avatar" src="{{item.avatar}}"></image>
+        </view>
+        <view class="zan-col zan-col-14">
+          <view>
+            <text class="zan-font-16 zan-font-bold">{{item.nickname}}</text>
+          </view>
+          <view>
+            <text class="zan-font-16 zan-c-gray-dark">@{{item.username}}</text>
+          </view>
+          <view>
+            <text class="zan-font-16 zan-c-gray-dark user-list-intro">{{item.intro}}</text>
+          </view>
+        </view>
+        <view class="zan-col zan-col-6" wx:if="{{self != item.user_id}}">
+          <button class="zan-btn zan-btn--small {{item.is_following==true ? '' : 'zan-btn--plain'}} zan-btn--primary" catchtap="followButton" data-userid="{{item.user_id}}" data-idx="{{index}}">{{item.is_following==true ? '正在关注' : '+关注 '}}</button>
+        </view>
+      </view>
+    </block>
+  </view>
 </template>
 
 
@@ -243,13 +272,13 @@
             <view class="zan-col zan-col-4">
               <image class="avatar" src="{{item.avatar}}" catchtap="toUser" data-userid="{{item.author_id}}"></image>
             </view>
-            <view class="zan-col zan-col-15">
+            <view class="zan-col zan-col-15" catchtap="toUser" data-userid="{{item.author_id}}">
               <view>
-                <text class="zan-font-16 zan-font-bold" catchtap="toUser" data-userid="{{item.author_id}}">{{item.nickname}}</text>
+                <text class="zan-font-16 zan-font-bold">{{item.nickname}}</text>
                 <text class="zan-font-16 " wx:if="{{item.type == 3}}" decode="true"> &nbsp;回复到:</text>
               </view>
               <view>
-                <text class="zan-font-16 zan-c-gray-dark" catchtap="toUser" data-userid="{{item.author_id}}">@{{item.username}}</text>
+                <text class="zan-font-16 zan-c-gray-dark">@{{item.username}}</text>
               </view>
             </view>
             <view class="zan-col zan-col-5">

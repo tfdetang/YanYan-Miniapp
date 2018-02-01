@@ -66,6 +66,7 @@ Page({
       }
     })
   },
+  
 
   submit: function (event) {
     var that = this
@@ -75,7 +76,11 @@ Page({
       qiniuUploader.upload(that.data.profile_img[0], (res) => {
         var imgurl = res.hash
         app.editUser(that.data.introValue, that.data.region[0], that.data.region[1], that.data.region[2], that.data.weixinValue, imgurl).then(res => {
-          console.log(res.data)
+          var pages = getCurrentPages()
+          var pageA = pages[pages.length - 2]
+          console.log(pageA)
+          pageA.handleParam(res.data)
+          wx.navigateBack()
         })
       }, (error) => {
         console.log('error: ' + error);
@@ -84,7 +89,11 @@ Page({
       );
     } else {
       app.editUser(that.data.introValue, that.data.region[0], that.data.region[1], that.data.region[2], that.data.weixinValue, '').then(res => {
-        console.log(res.data)
+        var pages = getCurrentPages()
+        var pageA = pages[pages.length - 2]
+        console.log(pageA)
+        pageA.handleParam(res.data)
+        wx.navigateBack()
       })
     }
     wx.showToast({

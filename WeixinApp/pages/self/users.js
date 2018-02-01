@@ -399,4 +399,10 @@ Page({
 
     this.setData(data);
   },
+
+  handleParam: function (data) {
+    this.setData({
+      user: data
+    })
+  }
 })

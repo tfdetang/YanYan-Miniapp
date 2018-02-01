@@ -148,30 +148,60 @@ def chat_2_dict(events):
 
 # ------------------------------用户信息-----------------------------------
 
-@app.route('/user/', methods=['GET'])
+@app.route('/activeuser/', methods=['GET'])
 def user_list():
-    limit = 6
+    limit = 10
     method = request.args.get('method', 'active')
     range = request.args.get('range', '500')
     count = db.session.query(Message).count()
-    start = count - int(range)
-    if start < 0:
-        start = 0
+    start_id = count - int(range)
+    if start_id < 0:
+        start_id = 0
     query = db.session.query(Message.author_id, func.count(Message.author_id)).filter(
-        (Message.type != 4) & (Message.id > start)).group_by(
+        (Message.type != 4) & (Message.id > start_id)).group_by(
         Message.author_id).order_by(
         func.count(Message.author_id).desc())
     authors = query.limit(limit).all()
     author_list = []
     for i in authors:
         author = db.session.query(User).filter(User.id == i[0]).one()
-        author_dict = dict(user_id=author.id,
-                           avatar="{}avatar_{}".format(app.config['BASE_URL'], author.id),
-                           nickname=author.nickname)
+        author_dict = user_2_dict(author, simple=True)
         author_list.append(author_dict)
     result = dict(num=len(author_list),
                   author_list=author_list)
     return jsonify(result)
+
+
+@app.route('/user/', methods=['GET'])
+@login_required
+def get_users():
+    method = request.args.get('method', 'followers')
+    start = request.args.get('start', '0')
+    id = request.args.get('id', '0')
+    limit = 15
+    if method == 'followers':
+        user = load_user_by_id(int(id))
+        get_users = user.followers
+    elif method == 'followed':
+        user = load_user_by_id(int(id))
+        get_users = user.followed
+    elif method == 'favo':
+        message = db.session.query(Message).filter(Message.id == int(id)).one()
+        get_users = message.favo_users
+    else:
+        message = db.session.query(Message).filter(Message.id == int(id)).one()
+        get_users = message.quote_users
+
+    users = get_users[int(start):int(start)+limit]
+    user_list = []
+    for i in users:
+        user = user_2_dict(i, simple=True)
+        user['is_following'] = g.user.is_following(user['user_id'])
+        user_list.append(user)
+    result = dict(num=len(user_list),
+                  user_list=user_list)
+    return jsonify(result)
+
 
 
 @app.route('/user/self/', methods=['GET'])
@@ -558,7 +588,7 @@ def get_moments():
 
 @app.route('/channels/', methods=['GET'])
 def get_channels():
-    limit = 5
+    limit = 8
     start = request.args.get('start', '0')
     range = request.args.get('range', '500')
     method = request.args.get('method', 'comment')  # 暂时只能通过评论数来对channel下的Message进行排序
@@ -568,11 +598,10 @@ def get_channels():
     channels = query.offset(start).limit(limit).all()
     channel_list = []
     for i in channels:
-        message_count = db.session.query(channel_2_message).filter(channel_2_message.c.channel_id == i[0]).count()
         channel = db.session.query(Channel).filter(Channel.id == i[0]).one()
         message = channel.most_comment_message().first()
         channel_dict = dict(channel_name=channel.name,
-                            message_count=message_count,
+                            message_count=channel.message_count(),
                             message=message_2_dict(message, login=False))
         channel_list.append(channel_dict)
     result = dict(num=len(channel_list),
@@ -587,10 +616,17 @@ def search_user():
     username = request.args.get('username', '')
     limit = int(request.args.get('limit', '6'))
     start = int(request.args.get('start', '0'))
+    mode = request.args.get('mode', 'simple')
+    if mode == 'full':
+        simple = False
+    else:
+        simple = True
     find_users = User.query.filter(User.username.contains(username)).offset(start).limit(limit).all()
     users = []
     for i in find_users:
-        user = user_2_dict(i, simple=True)
+        user = user_2_dict(i, simple=simple)
+        if mode == 'search':
+            user['is_following'] = g.user.is_following(user['user_id'])
         users.append(user)
     result = dict(num=len(users),
                   user_list=users)
@@ -606,7 +642,8 @@ def search_channel():
     channels = []
     for i in find_channels:
         channel = dict(name=i.name,
-                       id=i.id)
+                       id=i.id,
+                       count=i.message_count())
         channels.append(channel)
     result = dict(num=len(channels),
                   channel_list=channels)
@@ -618,7 +655,7 @@ def search_message():
     body= request.args.get('body', '')
     limit = int(request.args.get('limit', '4'))
     start = int(request.args.get('start', '0'))
-    find_message = Message.query.whoosh_search(body).limit(limit).all()
+    find_message = Message.query.whoosh_search(body).offset(start).limit(limit).all()
     message_list = []
     if find_message:
         message_list = messages_2_list(find_message, login=False)

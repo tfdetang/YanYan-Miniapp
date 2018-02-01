@@ -1,6 +1,8 @@
 {
   "pages": [
     "pages/index/index",
+    "pages/search/search",
+    "pages/user_list/user_list",
     "pages/followed/index",
     "pages/message_detail/message_detail",
     "pages/editor/editor",

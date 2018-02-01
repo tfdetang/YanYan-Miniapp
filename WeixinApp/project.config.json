@@ -32,6 +32,12 @@
 					"name": "资料编辑",
 					"pathName": "pages/edit_profile/edit_profile",
 					"query": ""
+				},
+				{
+					"id": -1,
+					"name": "用户页面",
+					"pathName": "pages/self/users",
+					"query": ""
 				}
 			]
 		}

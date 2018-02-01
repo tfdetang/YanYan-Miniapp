@@ -77,9 +77,21 @@ App({
 
   getActiveUsers: function (method) {
     var that = this
-    var url = config.getHostUrl() + 'user/'
+    var url = config.getHostUrl() + 'activeuser/'
     var data = {
       method:method
+    }
+    return util.getRequest(url, data)
+  },
+
+  getUserList: function(method,start,id){
+    var that = this
+    var url = config.getHostUrl() + 'user/'
+    var data = {
+      login_key: wx.getStorageSync('userKey').login_key,
+      method: method,
+      start: start,
+      id: id
     }
     return util.getRequest(url, data)
   },
@@ -296,20 +308,37 @@ App({
     }
   },
 
-  searchUsers: function (username) {
+  searchUsers: function (username,limit,start,mode) {
     var that = this
     var url = config.getHostUrl() + 'search/user/'
     var data = {
-      username: username
+      login_key: wx.getStorageSync('userKey').login_key,
+      username: username,
+      limit: limit,
+      start: start,
+      mode: mode
     }
     return util.getRequest(url, data)
   },
 
-  searchChannels: function (name) {
+  searchChannels: function (name,limit,start) {
     var that = this
     var url = config.getHostUrl() + 'search/channel/'
     var data = {
-      channel: name
+      channel: name,
+      limit: limit,
+      start: start
+    }
+    return util.getRequest(url, data)
+  },
+
+  searchMessages: function (body,limit,start) {
+    var that = this
+    var url = config.getHostUrl() + 'search/message/'
+    var data = {
+      body:body,
+      limit:limit,
+      start:start
     }
     return util.getRequest(url, data)
   }
